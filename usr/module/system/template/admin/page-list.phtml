@@ -1,0 +1,97 @@
+<?php
+    $this->css($this->assetModule('script/system-ui.css'));
+    $this->jQuery();
+    $this->backbone();
+?> 
+<div id="page-list-page" class="page-list-page">
+    <?php foreach ($pagesBySection as $key => $section) { ?>
+    <fieldset>
+        <legend><?php echo $key; ?><?php if ($key == 'front') { ?><button class="btn btn-primary js-add" style="margin-left: 20px;"><?php _e('Setup a page'); ?></button><?php } ?></legend>
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 40%;"><?php _e('Title'); ?></th>
+                <th><?php _e('Action'); ?></th>
+            </tr>    
+        </thead>
+        <tbody>
+            <?php foreach ($section['pages'] as $page) { ?>
+            <tr data-id="<?php echo $page['id']; ?>">
+                <td>
+                    <?php echo $this->escape($page['title']); ?>
+                </td>
+                <td>
+                    <div class="btn-group btns-indent">
+                        <?php if ($page['id']) { ?>
+                            <a class="btn btn-link js-edit"><?php _e('Edit'); ?></a>
+                        <?php } ?>
+                        <?php if ($page['block']) { ?>
+                            <a class="btn btn-link" href="<?php echo $this->url('', array('action' => 'block', 'page' => $page['id'], 'name' => $name)); ?>"><?php _e('Dress up'); ?></a>
+                        <?php } ?>
+                        <?php if ($page['custom']) { ?>
+                            <a class="btn btn-link js-delete"><?php _e('Delete'); ?></a>
+                        <?php } ?>
+                    </div>
+                </td>    
+            </tr>
+            <?php } ?>
+         </tbody>   
+        </table>
+    </fieldset>
+    <?php } ?>
+</div>
+<script>
+(function($) {
+    var page = {
+        modal: $("<div>", { "class": "modal hide fade" }).appendTo(document.body),
+        el: $('#page-list-page'),
+        $: function(selector) {
+            return this.el.find(selector);
+        },
+        init: function() {
+            _.bindAll(this);
+            this.$('.js-edit').click(this.showEditModal);
+            this.$('.js-delete').click(this.deleteAction);
+            this.$('.js-add').click(this.addAction);
+        },
+        showEditModal: function(e) {
+            var self = this;
+            $.get('<?php echo $this->url('', array('action' => 'edit', 'id' => '')); ?>' + this.getId($(e.target))).done(function(res) {
+                self.modal.html(res);
+                self.modal.modal('show');
+                formModule.success =  function() {
+                    self.modal.modal('hide');
+                };
+            });
+        },
+        addAction: function() {
+            var self = this;
+            $.get('<?php echo $this->url('', array('action' => 'add', 'name' => $name)); ?>').done(function(res) {
+                self.modal.html(res);
+                self.modal.modal('show');
+                formModule.success = function() {
+                    self.modal.modal('hide');
+                    location.href = location.href;
+                };
+            });
+        },
+        deleteAction: function(e) {
+            var tar = $(e.target),
+                p = tar.parents('tr');
+            if (confirm('<?php _e("Are you sure to delete the page?") ?>')) {
+                $.get('<?php echo $this->url('', array('action' => 'delete', 'id' => '')); ?>' + this.getId(tar)).done(function(res) {
+                    if (res == 1) {
+                        p.fadeOut(150, function() {
+                            p.remove();
+                        });
+                    }
+                });
+            }
+        },
+        getId: function(tar) {
+            return tar.parents('tr').attr('data-id');
+        }
+    }
+    page.init();
+})(jQuery)
+</script>
