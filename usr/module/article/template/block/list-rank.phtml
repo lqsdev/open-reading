@@ -1,0 +1,27 @@
+<style>
+    .article-list-rank span {
+        font-style: italic;
+        margin-right: 6px;
+        margin-left: -5px;
+        font-weight: bold;
+        color: #808080;
+    }
+    .article-list-rank a {
+        color: #333333;
+    }
+    .article-list-rank .emphasize {
+        color: #d01628;
+    }
+</style>
+<ul class="list list-rank unstyled">
+    <?php 
+    $i = 0;
+    foreach ($block['articles'] as $article) { ?>
+        <li class="article-list-rank" style="padding: 2px">
+            <span <?php if ($i <= 2) echo 'class="emphasize"' ?>><?php if ($i < 9) echo 0 ?><?php echo ++$i ?></span>
+            <a target="_blank" href="<?php echo $this->escape($article['url']) ?>" title="<?php echo $this->escape($article['subject']) ?>">
+                <?php echo $this->escape($article['subject']) ?>
+            </a>
+        </li>
+    <?php } ?>
+</ul>

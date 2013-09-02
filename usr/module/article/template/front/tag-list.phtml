@@ -1,0 +1,34 @@
+<?php
+    $this->css($this->assetModule('script/article-front.css'));
+    $this->jQuery();
+?>
+<div class="pi-block">
+    <div class="clearfix pi-block-header">
+        <h4 class="pi-block-title"><?php _e('About') ?>
+            <span class="text-important divider">
+                <?php echo $this->escape($tag); ?>
+            </span><?php _e('information'); ?>
+        </h4>
+    </div>
+    <div class="article-list-content">
+        <ul class="list list14">
+            <?php $index = 0 ?>
+            <?php foreach ($articles as $article) { $index++ ?>
+                <li class="muted">
+                    <div class="list-hover">
+                        <span class="pull-right"><?php echo date('Y-m-d', $article['time_publish']); ?></span>
+                        <a class="article-list-title" target="_blank" href="<?php echo $article['url']; ?>" title="<?php echo $this->escape($article['subject']); ?>">
+                            <?php echo $this->escape($article['subject']); ?>
+                        </a>
+                    </div>               
+                <?php if ($index % 5 == 0) { ?>
+                    <li class="dashed">
+                <?php } ?>
+            <?php } ?>   
+        </ul>
+        <?php echo $this->paginationControl($paginator, 'Sliding', 'paginator.phtml', array('class' => 'pagination-centered')); ?>
+    </div>
+</div>
+<script>
+    $("#jsList").find(".dashed:last").css("marginBottom", "0");
+</script>

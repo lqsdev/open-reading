@@ -1,0 +1,25 @@
+<?php
+$style    = $block['style'];
+$target   = $block['target'];
+$articles = $block['articles'];
+
+$template = 'list-' . $style . '.phtml';
+?>
+
+<style>
+    .block-nopadding {
+        padding: 0;
+        margin: 0;
+    }
+    .article-block-custom-list {
+        padding: 5px 15px 5px 15px;
+    }
+</style>
+
+<div class="article-block-custom-list">
+    <?php include $template; ?>
+</div>
+
+<script>
+    $('.article-block-custom-list').parent().addClass('block-nopadding');
+</script>

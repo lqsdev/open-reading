@@ -1,0 +1,44 @@
+<?php
+    $this->css($this->assetModule('script/article-front.css'));
+    $this->bootstrap('js/bootstrap.min.js');
+?>
+
+<div class="pi-block">
+    <div class="clearfix pi-block-header">
+        <h4 class="pi-block-title"><?php echo $this->escape($title) ?></h4>
+    </div>
+    <div class="topic-list-content">
+        <ul class="list list14">
+            <?php $index = 0 ?>
+            <?php foreach ($topics as $row) {
+                $eachCount = isset($count[$row['id']]) ? $count[$row['id']] : 0;
+            ?>
+                <li class="muted">
+                    <div class="list-hover">
+                        <span class="pull-right"><?php echo $this->escape($eachCount) . __(' articles') ?></span>
+                        <a class="topic-list-title" 
+                           target="_blank" 
+                           href="<?php echo $this->escape($row['url']) ?>" 
+                           title="<?php echo $this->escape($row['title']) ?>">
+                               <?php echo $this->escape($row['title']) ?>
+                        </a>
+                    </div>
+                </li>
+                <?php if (!(++$index % 5)) { ?>
+                    <li class="dashed"></li>    
+                <?php } ?>    
+            <?php } ?>   
+        </ul>
+        <?php 
+            echo $this->paginationControl(
+                $paginator,
+                'Sliding',
+                'paginator.phtml',
+                array('class' => 'pagination-centered')
+            ); 
+        ?>
+    </div>
+</div>
+<script>
+    $("#jsList").find(".dashed:last").css("marginBottom", "0");
+</script>
