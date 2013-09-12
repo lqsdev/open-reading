@@ -1,81 +1,22 @@
-Open Reading£¨¿ª·ÅÔÄ¶ÁÆ½Ì¨£©
+Open Readingï¼ˆå¼€æ”¾é˜…è¯»å¹³å°ï¼‰
 =================
 
-¿ª·ÅÔÄ¶ÁÆ½Ì¨ÏîÄ¿ÊÇ±±¾©ÁúÈªËÂĞÅÏ¢ÖĞĞÄ·¢ÆğµÄÒ»¸ö»¥ÁªÍø¿ªÔ´Èí¼şÏîÄ¿£¬ÒªÎªÈ«ÊÀ½çµÄ³ö°æÕß¡¢ÔÄ¶ÁÕßÌá¹©×îºÃµÄ¿ªÔ´Í¼Êé»¥ÁªÍø·¢²¼¡¢ÔÄ¶ÁÏµÍ³¡£ĞÅÏ¢ÖĞĞÄ×÷Îª·¢ÆğÕß¡¢×éÖ¯Õß¡¢Êµ¼ùÕß£¬Í¨¹ıÕâ¸ö¿ªÔ´µÄÏîÄ¿Äı¾Û¸ü¶àµÄÉÆĞÄ¡¢ÉÆÔ¸¡¢ÉÆĞĞ£¬ÈÃ·ğ·¨Ö®¹âÕÕ½øITºÍ»¥ÁªÍø¡£
-×÷Îª¿ª·ÅÔÄ¶ÁÆ½Ì¨µÄÒ»¸öĞĞÒµÓ¦ÓÃÊµÀı£¬Ê¦¸¸²©¿ÍÊéµç×Ó»¯ÏîÄ¿×÷Îª¿ª·ÅÔÄ¶ÁÆ½Ì¨µÄ¾ßÌåÓ¦ÓÃ¡£
+å¼€æ”¾é˜…è¯»å¹³å°(Open Reading Platform)é¡¹ç›®æ˜¯åŒ—äº¬é¾™æ³‰å¯ºä¿¡æ¯ä¸­å¿ƒå‘èµ·çš„ä¸€ä¸ªäº’è”ç½‘å¼€æºè½¯ä»¶é¡¹ç›®ï¼Œè¦ä¸ºå…¨ä¸–ç•Œçš„å‡ºç‰ˆè€…ã€é˜…è¯»è€…æä¾›æœ€å¥½çš„å¼€æºå›¾ä¹¦äº’è”ç½‘å‘å¸ƒã€é˜…è¯»ç³»ç»Ÿã€‚ä¿¡æ¯ä¸­å¿ƒä½œä¸ºå‘èµ·è€…ã€ç»„ç»‡è€…ã€å®è·µè€…ï¼Œé€šè¿‡è¿™ä¸ªå¼€æºçš„é¡¹ç›®å‡èšæ›´å¤šçš„å–„å¿ƒã€å–„æ„¿ã€å–„è¡Œï¼Œè®©ä½›æ³•ä¹‹å…‰ç…§è¿›ITå’Œäº’è”ç½‘ã€‚
+ä½œä¸ºå¼€æ”¾é˜…è¯»å¹³å°çš„ä¸€ä¸ªè¡Œä¸šåº”ç”¨å®ä¾‹ï¼Œå¸ˆçˆ¶åšå®¢ä¹¦ç”µå­åŒ–é¡¹ç›®ä½œä¸ºå¼€æ”¾é˜…è¯»å¹³å°çš„å…·ä½“åº”ç”¨ã€‚
 
-µ±Ç°£¬²©¿ÍÊéÒÑ¾­³ö°æÁË100±¾£¬²©¿ÍÊéµÄÄÚÈİÔ´×ÔÑ§³Ï´óºÍÉĞµÄ²©¿Í(http://www.longquanzs.org/b/)¡£²©¿Íºë·¨ÊÇÑ§³Ï·¨Ê¦ºë·¨ÀûÉúÊÂÒµµÄÒ»²¿·Ö£¬²©¿ÍÊéµç×Ó»¯ÏîÄ¿Í¨¹ıÌá¹©ÓÅĞãµÄÔÄ¶ÁÌåÑéÈÃÉç»á´óÖÚÁË½âÁúÈªµÀ³¡£¬½Ó´¥·ğ·¨£¬½ø¶ø»ØÀ¡Éú»î£¬ÌáÉıÉúÃüÖÊÁ¿¡£
+å½“å‰ï¼Œåšå®¢ä¹¦å·²ç»å‡ºç‰ˆäº†100æœ¬ï¼Œåšå®¢ä¹¦çš„å†…å®¹æºè‡ª[å­¦è¯šå¤§å’Œå°šçš„åšå®¢](http://www.longquanzs.org/b/)ã€‚åšå®¢å¼˜æ³•æ˜¯å­¦è¯šæ³•å¸ˆå¼˜æ³•åˆ©ç”Ÿäº‹ä¸šçš„ä¸€éƒ¨åˆ†ï¼Œåšå®¢ä¹¦ç”µå­åŒ–é¡¹ç›®é€šè¿‡æä¾›ä¼˜ç§€çš„é˜…è¯»ä½“éªŒè®©ç¤¾ä¼šå¤§ä¼—äº†è§£é¾™æ³‰é“åœºï¼Œæ¥è§¦ä½›æ³•ï¼Œè¿›è€Œå›é¦ˆç”Ÿæ´»ï¼Œæå‡ç”Ÿå‘½è´¨é‡ã€‚
 
-¿ª·ÅÔÄ¶ÁÆ½Ì¨µÄ¶¨Î»
-Open Reading Platform¿ª·ÅÔÄ¶ÁÆ½Ì¨
-¨C	Open-source book publishing platform
-¿ªÔ´µÄÍ¼Êé³ö°æ¡¢·¢²¼Æ½Ì¨
-¨C	Internationalization platform
-Ö§³Ö¹ú¼Ê»¯µÄÆ½Ì¨
-¨C	The Top  1 platform of Open
-ÔÚÏß³ö°æÔÄ¶ÁÁìÓò×îºÃµÄ¿ªÔ´Æ½Ì¨
-¨C	International platform
-¹ú¼ÊºÏ×÷µÄÆ½Ì¨
-¨C	Zen platform
-Ò»¸öÓĞìøÒâµÄÆ½Ì¨£¨Ğ´´úÂëÈç×øìø£¬¶Á´úÂëÈç²Îìø£©
-¨C	Wet platform
-Ò»¸öÊªµÄÆ½Ì¨£¨Éç»á»¯¡¢ÖÇÄÜ»¯£©
+å¼€æ”¾é˜…è¯»å¹³å°çš„å®šä½
 
-
-About Pi
------------
-
-Pi is a role oriented application development engine for web and mobile, designed as the next generation and a successor to Xoops.
-Pi is developed upon PHP and MySQL with selected third-party frameworks including but not limited to [Zend Framework 2](https://github.com/zendframework/zf2), jQuery, Bootstrap and Backbone.
-
-Pi Project follows the philosophy of open standard, open design, open development and open management. Pi is born as a complete open source project and intended to build a sustainable ecosystem that benefits all contributors and users. 
-
-Pi Engine is started by [Taiwen Jiang](http://github.com/taiwen) (Xoops Project Lead and Dev Lead), [Marc Desrousseaux](http://github.com/MarcoXoops) (Xoops QA Lead), [Hossein Azizabadi](http://github.com/voltan) (Xoops Persian Lead), [Kris](http://github.com/krisxoofoo) (Xoops Council Member and Xoops France Lead), etc. [Pi Team](https://github.com/pi-engine/pi/wiki/Pi-Team) is highly inspired by the Xoops led by onokazu (Ono Kazumi), skalpa and phppp (Taiwen Jiang, or D.J.) successively since 2001 and will continue to support and promote Xoops.
-
-**Check out [Latest Release](https://github.com/pi-engine/pi/blob/master/doc/releasenotes.md).**
-
-
-Highlights
--------------
-1. **Sustainable ecosystem:** A sustainable ecosystem built upon open standard, open source code, open development and open management on Github.
-2. **Engineered development:** Quality ensured engineering development with short learning curve, low skill requirements with clean MVC architecture, semantic templating, sophisticated API and strict starndards.
-3. **Visualized management:** Easy and responsive application and content management based on visualized mangement tools and interface with page and widget mechanism.
-4. **Agile workflow:** Role oriented architecture and deployment skeleton supports manageable agile development workflow.
-
-Features and practices
-----------------------
-* Modularization for functionality and applications
-* Components for basic libraries and services for fundamental system functions
-* Theming for presentation and appearance
-* Design-friendly templating
-* DevOps oriented architecture
-* Centralized security enhancement
-
-Quick start
------------
-* Documents at [Pi Wiki](https://github.com/pi-engine/pi/wiki) and [APIs](http://api.pialog.org).
-* Download the [latest stable code](https://github.com/pi-engine/pi/zipball/master) and [latest dev code](https://github.com/pi-engine/pi/zipball/develop).
-* Clone Pi repo `git clone git://github.com/pi-engine/pi.git`.
-* Resources: [Pi modules](https://github.com/pi-module), [Pi themes](https://github.com/pi-theme) and [extensions] (https://github.com/pi-engine/pi/blob/master/README-GIT.md).
-
-Development
-----------
-
-You may contribute to Pi Engine by [working on Pi code](https://github.com/pi-engine/pi/blob/master/README-GIT.md) and submit to Pi repo with **[Pull Request](https://help.github.com/articles/using-pull-requests)** or submitting bug reports and feature requests to **[Issue Tracker](https://github.com/pi-engine/pi/issues)**.
-
-
-Copyright and License
----------------------
-
-The Engine is released under a [New BSD License](https://github.com/pi-engine/pi/blob/master/doc/license.txt).
-
-
-Demos
------
-Demo sites with shared deployment: 
-* Pi Dialogue ([pialog.org](http://pialog.org) | [pialogue.org](http://pialogue.org))
-* Pi Demo ([pi-demo.org](http://pi-demo.org))
-* Xoops/Pi ([xoopsengine.org](http://demo.xoopsengine.org))
-
-
-__Updated on August 21st, 2013__  Update again.
+- Open-source book publishing platform
+  å¼€æºçš„å›¾ä¹¦å‡ºç‰ˆã€å‘å¸ƒå¹³å°
+- Internationalization platform
+  æ”¯æŒå›½é™…åŒ–çš„å¹³å°
+- The Top 1 platform of Open
+  åœ¨çº¿å‡ºç‰ˆé˜…è¯»é¢†åŸŸæœ€å¥½çš„å¼€æºå¹³å°
+- International platform
+  å›½é™…åˆä½œçš„å¹³å°
+- Zen platform
+  ä¸€ä¸ªæœ‰ç¦…æ„çš„å¹³å°ï¼ˆå†™ä»£ç å¦‚åç¦…ï¼Œè¯»ä»£ç å¦‚å‚ç¦…ï¼‰
+- Wet platform
+  ä¸€ä¸ªæ¹¿çš„å¹³å°ï¼ˆç¤¾ä¼šåŒ–ã€æ™ºèƒ½åŒ–ï¼‰
