@@ -1,0 +1,111 @@
+<?php
+    $this->bootstrap();
+    $this->css($this->assetModule('script/system-ui.css'));
+    $this->jQuery();
+    $this->backbone();
+?>
+<ul class="nav nav-tabs">
+    <li><a href="<?php echo $this->url('', array('action' => 'index')); ?>" title="<?php _e('Installed'); ?>"><?php _e('Installed'); ?></a></li>
+    <li class="active"><a href="<?php echo $this->url('', array('action' => 'available')); ?>" title="<?php _e('Availables'); ?>"><?php _e('Availables'); ?></a></li>
+    <li class="disabled"><a><?php _e('Repository'); ?></a></li>
+</ul>
+
+<div class="avail-module-page" id="js-module">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 10%;"><?php _e('Icon'); ?></th>
+                <th style="width: 15%;"><?php _e('Title'); ?></th>
+                <th style="width: 15%;"><?php _e('Version'); ?></th>
+                <th style="width: 30%;"><?php _e('Description'); ?></th>
+                <th><?php _e('Action'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($modules as $directory => $module) { ?>
+            <tr class="module-item"
+                data-name="<?php echo $directory; ?>"
+                data-clone="<?php echo $this->url('', array('action' => 'clone', 'directory' => $directory)); ?>">
+                <td>
+                    <div class="module-item-logo">
+                        <img src="<?php echo $module['meta']['logo']; ?>" alt="<?php echo $this->escape($module['meta']['title']); ?>">
+                    </div>
+                </td>
+                <td>
+                    <div class="module-item-title">
+                        <strong><?php echo $this->escape($module['meta']['title']); ?></strong>
+                    </div>
+                </td>
+                <td>
+                    <?php echo $module['meta']['version']; ?>
+                </td>
+                <td>
+                    <div class="module-p"><?php echo $this->escape($module['meta']['description']); ?></div>
+                    <a href="javascript:void(0)" class="invisible detail-action"><?php _e('Detail'); ?></a>
+                    <div class="hide well well-small">
+                        <dl class="dl-horizontal">
+                            <dt><?php _e('Directory:'); ?></dt>
+                            <dd><?php echo $directory; ?></dd>
+                            <dd>&nbsp;
+                            <?php foreach ($module['author'] as $key => $value) {
+                                echo '<dt>' . _escape($key) . ':</dt>';
+                                echo '<dd>' . _escape($value) . '</dd>';
+                            }?>
+                        </dl>
+                    </div>
+                </td>
+                <td>
+                    <div class="btn-group">
+                    <?php
+                        if (empty($module['meta']['installed'])) {
+                            $buttonClass = '';
+                            $installUrl = $this->url('', array('action' => 'install', 'directory' => $directory));
+                        } else {
+                            $buttonClass = ' disabled';
+                            $installUrl = 'javascript:void(0)';
+                        }
+                        echo sprintf('<a class="btn%s" href="%s">%s</a>', $buttonClass, $installUrl, __('Install'));
+                    ?>
+                    <?php if (!empty($module['meta']['clonable'])) { ?>
+                    <span class="btn module-clone"><?php _e('Clone'); ?></span>
+                    <?php } ?>
+                    </div>
+                </td>
+            </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>
+<script>
+(function($) {
+    var page = {
+        el: $('#js-module'),
+        modal: $('<div class="modal hide fade">').appendTo(document.body),
+        installUrl: '<?php echo $this->url('', array('action' => 'install')); ?>',
+        $: function(selector) {
+            return this.el.find(selector);
+        },
+        init: function() {
+            _.bindAll(this);
+            this.$('.module-clone').click(this.cloneAction);
+            this.$('.detail-action').click(this.toggleDetail);
+        },
+        cloneAction: function(e) {
+            var p = $(e.target).parents('tr'),
+                self =this;
+            $.get(p.attr('data-clone')).done(function(res) {
+                self.modal.html(res).modal('show');
+                formModule.success = function(res) {
+                    var d = res.data;
+                    location.href = self.installUrl + 'name/' + d.name + '/directory/' 
+                        + d.directory + '/title/' + d.title;
+                };
+            });
+        },
+        toggleDetail: function(e) {
+            $(e.target).siblings('.well').toggle();
+        }
+    }
+    page.init();
+})(jQuery)
+</script>

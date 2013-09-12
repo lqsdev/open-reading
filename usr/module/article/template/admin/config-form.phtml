@@ -1,0 +1,54 @@
+<?php
+    $this->css(array(
+        $this->assetModule('script/article-admin.css'),
+    ));
+    $this->jQuery();
+    $this->Backbone();
+?>
+<div>
+    <div class="span3">
+        <?php include 'config-nav.phtml' ?>
+    </div>
+    
+    <div class="span12">
+        <h2 class="page-header"><?php echo $this->escape($title) ?></h2>
+
+        <?php include 'message-box.phtml' ?>
+
+        <?php echo $this->form()->openTag($form) ?>
+        <div><?php $element = $form->get('mode'); ?>
+            <div><?php echo $this->formElement($element) ?></div>
+        </div>
+
+        <div id="article-config-form-elements" 
+            <?php 
+                if ($custom != $form->get('mode')->getValue()) {
+                    echo 'style="display: none"';
+                }
+            ?>>
+            <h4 class="span12 page-header"><?php _e('Form Elements') ?></h4>
+            <?php foreach ($items as $name => $item) { ?>
+                <?php $element = $form->get($name); ?>
+                <div class="span3 control-group<?php if ($this->formElementErrors($element)) echo ' error' ?>">
+                    <div><?php echo $this->formElement($element) ?></div>
+                </div>
+            <?php } ?>
+        </div>
+
+        <div class="span12">
+        <?php $element = $form->get('submit'); ?>
+            <div><?php echo $this->formElement($element) ?></div>
+        </div>
+        <?php echo $this->form()->closeTag() ?>
+    </div>
+</div>
+
+<script>
+    $('input[name="mode"]').change(function() {
+        if ('custom' == $(this).val()) {
+            $('#article-config-form-elements').css('display', 'block');
+        } else {
+            $('#article-config-form-elements').css('display', 'none');
+        }
+    });
+</script>

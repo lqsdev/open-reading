@@ -1,0 +1,38 @@
+<?php
+/**
+ * Pi Engine (http://pialog.org)
+ *
+ * @link            http://code.pialog.org for the Pi Engine source repository
+ * @copyright       Copyright (c) Pi Engine http://pialog.org
+ * @license         http://pialog.org/license.txt New BSD License
+ */
+
+return array(
+    // Admin section
+    'admin' => array(
+        array(
+            'controller'    => 'script',
+            'permission'    => array(
+                'parent'        => 'script',
+            ),
+        ),
+        array(
+            'controller'    => 'static',
+            'permission'    => array(
+                'parent'        => 'static',
+            ),
+        ),
+        array(
+            'controller'    => 'carousel',
+            'permission'    => array(
+                'parent'        => 'carousel',
+            ),
+        ),
+        array(
+            'controller'    => 'tab',
+            'permission'    => array(
+                'parent'        => 'tab',
+            ),
+        ),
+    ),
+);

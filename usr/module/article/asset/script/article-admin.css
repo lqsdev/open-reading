@@ -1,0 +1,60 @@
+/* List page */
+.tab-content >.active.table {
+    display: table;
+}
+.nav-list > .active > a {
+    cursor: text;
+}
+.row-actions {
+    visibility: hidden;
+}
+tr:hover .row-actions {
+    visibility: visible;
+}
+td {
+    word-break: break-all;
+}
+#pi-article .nav-pills > .active > a {
+    color: #333;
+    font-weight: bold;
+    background: none;
+    cursor: text;
+}
+#jsList  .table-striped tbody tr:nth-child(2n+1) th {
+    background: #eee;
+}
+#jsList .table-striped {
+    border: 1px solid #ccc;
+}
+#jsList .form-inline {
+    margin-bottom: 15px;
+}
+#jsList .form-search {
+    margin: 0 20px 0 0;
+}
+div .well {
+    max-width: 340px;
+    padding: 8px 0;
+}
+
+/* User level edit page */
+.btn-group ul {
+     left: -220px;
+}
+.article-add-category-button {
+    margin-left: 5px;
+    border-radius: 4px;
+    height: 24px;
+    line-height: 24px;
+}
+.article-each-category .label {
+    height: 20px;
+    line-height: 20px;
+    float: left;
+    margin: 5px;
+}
+.article-each-category .close {
+    float: none;
+    margin-left: 3px;
+    visibility: hidden;
+}

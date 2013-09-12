@@ -1,0 +1,77 @@
+<?php
+    $this->css($this->assetModule('script/system-ui.css'));
+    $this->jQuery();
+    $this->js($this->assetModule('script/system-msg.js', 'system'));
+?>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="<?php echo $this->url('', array('controller' => 'cache', 'action' => 'index')); ?>" title="<?php _e('Cache flush'); ?>"><?php _e('Cache flush'); ?></a></li>
+    <li><a href="<?php echo $this->url('', array('controller' => 'asset', 'action' => 'index')); ?>" title="<?php _e('Asset publish'); ?>"><?php _e('Asset publish'); ?></a></li>
+    <li><a href="<?php echo $this->url('', array('controller' => 'audit', 'action' => 'index')); ?>" title="<?php _e('Audit'); ?>"><?php _e('Audit'); ?></a></li>
+</ul>
+<h2 class="page-header"><?php echo $this->escape($title); ?></h2>
+<table class="table table-hover table-condensed" id="cache-list">
+    <thead>
+        <tr>
+            <th style="width: 250px;"><?php _e('Title'); ?></th>
+            <th><?php _e('Action'); ?></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td>
+                <span class="btn btn-small btn-primary" data-link="<?php echo $this->url('', array('action' => 'flush', 'type' => 'all')); ?>"><?php _e('Flush all'); ?></span>
+            </td>
+        </tr>
+        <?php foreach ($list as $name => $label) { ?>
+        <tr>
+            <td><?php echo $this->escape($label); ?></td>
+            <td>
+                <span class="btn btn-small" data-link="<?php echo $this->url('', array('action' => 'flush', 'type' => $name)); ?>"><?php _e('Flush'); ?></span>
+            </td>
+        </tr>
+        <?php } ?>
+        <?php if (!empty($page)) { ?>
+        <?php foreach ($page['modules'] as $name) { ?>
+        <tr>
+            <td><?php echo $name; ?></td>
+            <td>
+                <span class="btn btn-small" data-link="<?php echo $this->url('', array('action' => 'flush', 'type' => 'page', 'item' => $name)); ?>"><?php _e('Flush'); ?></span>
+            </td>
+        </tr>
+        <?php } ?>
+        <?php } ?>
+        <tr>
+            <td><?php _e('Registry'); ?></td>
+            <td>
+                <span class="btn btn-small" data-link="<?php echo $this->url('', array('action' => 'flush', 'type' => 'registry')); ?>"><?php _e('Flush'); ?></span>
+		      </td>
+        </tr>
+        <?php foreach ($registry as $name) { ?>
+        <tr>
+            <td>
+                <span class="gutter-large"><?php echo $name; ?></span>
+            </td>
+            <td>
+                <span class="btn btn-small" data-link="<?php echo $this->url('', array('action' => 'flush', 'type' => 'registry', 'item' => $name)); ?>"><?php _e('Flush'); ?></span>
+            </td>
+        </tr>
+        <?php } ?>
+    </tbody>
+</table>
+
+
+
+<script>
+(function($) {
+    $("#cache-list").on("click", ".btn", function() {
+       systemMessage.wait("<?php _e('Cache flush in process'); ?>");
+       $.getJSON($(this).attr("data-link")).done(function(result) {
+          if (result.status == 1) {
+             systemMessage.succ(result.message);
+          } else {
+             systemMessage.fail(result.message);
+          }
+       });
+    });
+})(jQuery)
+</script>

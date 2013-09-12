@@ -1,0 +1,38 @@
+<?php 
+$totalWidth = 900;
+$topCount   = count($block);
+$width      = floor($totalWidth / $topCount) - 20;
+?>
+
+<style>
+    .article-block-item {
+         margin-right: 20px;
+         border-right: 1px #999999 inset;
+    }
+</style>
+
+<div class="row-fluid" style="padding: 10px 10px 10px 30px">
+    <?php 
+        $i = 1;
+        foreach ($block as $top) {
+    ?>
+    <div style="width: <?php echo $this->escape($width) . 'px' ?>; float: left;" class="
+        <?php if ($i++ != $topCount) {
+            echo 'article-block-item';
+        }
+        ?>">
+        <div style="font-weight: bold;">
+            <a href="<?php echo $this->escape($top['url']) ?>" style="color: #48484C">
+                <?php echo $this->escape($top['title']) ?>
+            </a>
+        </div>
+        <?php foreach ($top['child'] as $sub) { ?>
+        <div style="font-size: 12px">
+            <a class="muted" href="<?php echo $this->escape($sub['url']) ?>">
+                <?php echo $this->escape($sub['title']) ?>
+            </a>
+        </div>
+        <?php } ?>
+    </div>
+    <?php } ?>
+</div>

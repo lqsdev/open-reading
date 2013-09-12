@@ -1,0 +1,58 @@
+<?php
+$topArticleOne = array_shift($articles);
+$topArticleTwo = array_shift($articles);
+?>
+<div class="row-fluid">
+    <div class="span6">
+        <div>
+            <h4 style="padding-top: 5px;">
+                <strong>
+                    <a target="<?php echo $this->escape($target) ?>" href="<?php echo $this->escape($topArticleOne['url']) ?>">
+                        <?php echo $this->escape($topArticleOne['subject']) ?>
+                    </a>
+                </strong>
+            </h4>
+            <div class="muted"><?php echo $this->escape(mb_substr($topArticleOne['summary'], 0, 30, 'UTF-8')) ?></div>
+        </div>
+        <div style="margin-top: 15px">
+            <ul style="margin-left: 15px">
+                <?php $i = 0; ?>
+                <?php foreach ($articles as $article) { ?>
+                    <?php if ($i++ % 2 == 1) { ?>
+                    <li class="muted" style="padding: 2px">
+                        <a target="<?php echo $this->escape($target) ?>" href="<?php echo $this->escape($article['url']) ?>" style="color: #48484C">
+                    <?php echo $this->escape($article['subject']) ?>
+                </a>
+                    </li>
+                    <?php } ?>
+                <?php } ?>
+            </ul>
+        </div>
+    </div>
+    <div class="pull-right span6">
+        <div>
+            <h4 style="padding-top: 5px;">
+                <strong>
+                    <a target="<?php echo $this->escape($target) ?>" href="<?php echo $this->escape($topArticleTwo['url']) ?>">
+                        <?php echo $this->escape($topArticleTwo['subject']) ?>
+                    </a>
+                </strong>
+            </h4>
+            <div class="muted"><?php echo $this->escape(mb_substr($topArticleTwo['summary'], 0, 30, 'UTF-8')) ?></div>
+        </div>
+        <div style="margin-top: 15px">
+            <ul style="margin-left: 15px">
+                <?php $j = 0; ?>
+                <?php foreach ($articles as $article) { ?>
+                    <?php if ($j++ % 2 == 0) { ?>
+                    <li class="muted" style="padding: 2px">
+                        <a target="<?php echo $this->escape($target) ?>" href="<?php echo $this->escape($article['url']) ?>" style="color: #48484C">
+                    <?php echo $this->escape($article['subject']) ?>
+                </a>
+                    </li>
+                    <?php } ?>
+                <?php } ?>
+            </ul>
+        </div>
+    </div>
+</div>
