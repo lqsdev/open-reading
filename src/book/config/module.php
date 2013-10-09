@@ -1,17 +1,13 @@
 <?php
-/**
- * Pi Engine (http://pialog.org)
- *
- * @link         http://code.pialog.org for the Pi Engine source repository
- * @copyright    Copyright (c) Pi Engine http://pialog.org
- * @license      http://pialog.org/license.txt New BSD License
- */
 
 /**
- * Module config and meta
- * 
- * @author Zongshu Lin <lin40553024@163.com>
- */
+ * Class controller Class
+ * @copyright       Copyright (c) lqsit
+ * @license         All rights reserved
+ * @author          lqsic
+ * @package         Module\book
+*/
+
 return array(
     // Module meta
     'meta'         => array(
@@ -46,11 +42,6 @@ return array(
             ),
             // Database meta
             'navigation'    => 'navigation.php',
-            'block'         => 'block.php',
-            'config'        => 'config.php',
-            'route'         => 'route.php',
-            'acl'           => 'acl.php',
-            'page'          => 'page.php',
         ),
     ),
 );
