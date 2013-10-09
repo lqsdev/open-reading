@@ -1,0 +1,364 @@
+Pi Engine Changelog
+
+Pi 2.3
+August 4th, 2013
+============
+* Added support for custom configuration
+* Refactored user API service with support for persistent profile
+* Modified config files: `var/config/service.authentication.php`; `var/config/service.user.php`
+* Added config for PHP-CS-Fixer: .php_cs
+* Moved timezone initialization from `Pi` class to `boot.php` for PSR "side effect" compliance
+* Modified boot file: `boot.php`
+* Changed `Pi::registry` API to `Pi::entity`
+* Added API `Pi::registry()` as alias for `Pi::service('registry')->handler()`
+* Added API `Pi::api()` as alias for `Pi::service('api')->handler()`
+* Added support for module schema parse
+* Added HTML5/CSS detection `modernizr` as a jQuery extension
+* Upgraded Zend Framework to 2.2.3
+* Implemented bootstrap-responsive for mobile device
+* Added template access script for angular.js
+* Added filters: `YesNo`, `Gender`, `DateTimeFormatter`
+* Changed route spec to support route name definition
+* Added API to fetch module resource meta directly
+* Added Image service based on Imagine library
+
+
+Pi 2.2.2: 660cf88a7ffd60e8937621819d11c08c67f1a0ad
+August 3rd, 2013
+=============================
+1. Added doc "Pi Engine Architecture Diagram"
+2. Added Pi\File\Transfer\Download for file download and script/download.php for single file download
+3. Added Pi\Service\Log::mute() and Debugger::mute to disable debugger output for some use cases.
+4. Fixes Issue #113: Navigation page active is not properly detected
+5. Added function for translation register: _t('Message to be translated later.')
+6. Renamed Setup translation function name to _s() to avoid conflicts with translation placeholder function _t()
+7. Added listener for error ViewModel under JSON/AJAX/Feed request
+8. Added "pi-feature" and "pi-spotlight" blocks to homepage on installation
+9. Added two new block zones to theme font layout: $block['0'] for head blocks and $block['99'] for foot blocks
+10. Added browser support indication to theme configuration
+11. Fixed Issue #121: exception messages were missed by ErrorStrategy template overwritten
+12. Merged theme/template/error-exception.phtml to error.phtml
+13. Modified config: var/config/config.application.php -- changed 'exception_template' value
+14. Formulated return of Ajax/JSON request with format: array('status' => 1, 'message' => '', 'data' => array())
+15. Default theme style refactoring
+16. Refactored view helpers to allow for attributes: Backbone, Bootstrap, Css, JQuery, Js
+17. CSS class/ID name standardization in process: prefixed with "pi-" and module identifier
+18. Organized theme CSS to style.css for generic, front.css for front pages and admin.css for admin area
+19. Build User APIs with avatar factory
+20. Modified config file: var/config/application.front.php - removed authentication resource; var/config/service.user.php - changed key 'handler' to 'adapter'
+21. Added syntactic sugar for escaper: '_escape' and '_strip' (@voltan) in lib/Pi/Utility/Filter.php
+22. Added syntactic sugar for user service: Pi::user()
+23. Upgraded to FontAwsome 3.2.1 (@krisxoofoo)
+24. First import of complete user APIs
+25. Added config 'list_number' to system for number of items on a list, added _t() to text for translation
+26. Migrated to Bootstrap for setup by @voltan
+27. Added support for extra extensions with Extra namespace
+28. Added API engine and routes
+29. Added system user model (by system module) and local user model (by user module)
+30. Refactored Default theme with strict Bootstrap compliance and Pi theme with strict HTML 5 (@sexnothing, @voltan, @loidco, etc.)
+31. Improved inline comments following docblock standards and generated Pi API at http://api.pialog.org
+32. Upgraded Zend Framework to 2.2.2 as Issue #151
+33. Skipped translation for view helpers
+34. Fixed Isse #166: error strategy should be performed prior to \Zend\Mvc\View\Http\InjectTemplateListener
+
+
+Pi 2.2.0: 3f6aba29a5bc28ba759e48fcf2e13781b64cab69
+June 19th, 2013
+=============================
+1. Upgraded ZF2 to 2.2.1
+2. Formulated CSV file format: keys and values are required to be quoted with enclosure of ["]
+3. Refactoring ZF related components: keep ZF untouched for smooth upgrade maintenance
+4. Modified config files with separate config file: var/config/application.front.php; var/config/application.admin.php; var/config/application.feed.php
+5. Added config file: var/config/config.application.php
+6. Modified boot.php: added constant 'PI_BOOT_ENABLE' and removed 'PI_BOOT_SKIP'
+7. Imported \RandomLib and \SecurityLib required by \Zend\Math\Rand
+8. Added ErrorStrategy for all erroneous results
+9. Added file: theme/template/error.phtml
+10. Added Pi\Version\Version and removed Pi::VERSION
+11. Added module availability check against module controller load
+
+
+June 8th, 2013
+=============================
+1. Disabled form autocomplete in setup
+2. Skip version comparison in debug mode for module update
+3. Fixed bug in URL generation with duplicated '/' reported in Issue #66
+4. Improved Filter to support regexp filter
+5. Refactored module install/uninstall/update displaying information messages on a redirecting page
+6. Formulated module install/uninstall/update result message structure for improvements in Issue #88
+7. Added default value 'text' for renderer to markup service
+8. Initiated system service Url
+9. Initiated system service User
+10. Added config file: var/config/service.user.php
+11. Improved filter User
+12. Changed route User parameter name 'name' to 'identity'
+13. Added support for auto detection of locale
+14. Added charset to service Locale
+15. Modified locale file folders: usr/locale/zh-cn  -- folder name must be in lower case
+16. Modified config file: var/config/service.markup.php -- removing default value for encoding
+17. Added vd shortcoming function to Debug
+18. Refactored bootstrap resource: changed resource namespace to Pi\Application\Bootstrap\Resource; changed Pi\Application\Bootstrap to Pi\Application\Bootstrap\ModuleBootstrap
+19. Changed Pi\Application\Engine\Standard methods: loadService to bootServices; setupResource to bootResources; loadResource to bootResource
+
+
+May 24th, 2013
+=============================
+1. Upgraded system to 3.2.0
+2. Modified configs: moved 'adminmail' to category 'mail'; changed 'fromname' to 'adminname', added 'mail_encoding' to category 'mail'; removed 'from', 'fromuid'
+3. Changed default config values: 'sitename', 'slogan' in setup
+4. Add 'name' to admin account in setup
+5. Modified file boot.php removing 'PI_PATH_WWW'
+6. Modified file var/config/host.php enabling parameters path-www and path-lib
+7. Fixed bug causing block cache conflicts, reported in Issue #77
+8. Changed backoffice mode name 'manage-Management' to 'manage-Setting'
+9. Added support for theme template inheritance proposed in Issue #80
+
+
+May 20th, 2013
+=============================
+1. Fixed config encode/decode conflicts reported by @MarcoXoops in Issue #13
+2. Modified _sanitize() adding default filter as 'full_special_chars'; _date() adding default time
+3. Added audit service
+4. Added config file: var/config/service.audit.php
+5. Improved mail service for template support
+6. Added locale file: usr/module/system/locale/en/mail/mail-text.txt
+7. Added locale file: usr/module/system/locale/en/mail/mail-html.txt
+8. Added locale file: usr/module/system/locale/en/mail/mail-body.txt
+9. Added TestController to system module with mail/audit test actions
+
+
+May 4th, 2013
+=============================
+1. Applied _date() to system module by @voltan
+2. Fixes bugs in navigation edit by @sexnothing
+3. Improved parameter filtering functionality with PHP filter_id()
+4. Added social widgets: Facebook Like, Google +1, Twitter share
+5. Added mail service
+6. Upgraded MakeItUp
+7. Added config file: var/config/service.mail.php
+
+
+April 19th, 2013
+=============================
+1. Upgraded ZF2 to 2.1.5
+2. Improved Intl functions for BC by @voltan
+3. Imported "test" module for module dependency test
+4. Refactored HTML head/foot rendering to expose section positions
+5. Added convenient methods for setting custom head title, keywords and description suggested by @voltan
+6. Moved Pi\Debug to Pi\Debug\Debug
+7. Refactored Pi\Security with Pi::service('Security') and Pi\Security\Security
+8. Added files: var/config/service.security.php
+9. Modified files: var/config/resource.security.php
+10. Added convenient methods and syntactic sugar for parameter filtering and sanitizing
+
+
+April 8th, 2013
+=============================
+1. Fixed Issue #21 reported by @voltan: duplicated head keywords and description
+2. Added missing head style in view renderer
+3. Changed empty result of navigation registry from false to array() to avoid crash in backend with no-nav module
+4. Refactored title/meta rendering
+5. Improved cache option files
+6. Added Pi\Cache\Storage\Adapter\Filesystem to record file expiration so that TTL is not required any more for reading cache
+7. Added support for Intl extension with intlDateFormatter and NumberFormatter suggested by @voltan in Issue #24
+8. Improved support for multi-host config
+9. Fixed ACL resource bugs in module installation/uninstallation
+10. Changed configuration related table fields from tinytext to text in System module v3.1.0
+11. Added missing module_dependency table in System module v3.1.1
+
+
+March 23rd, 2013
+=============================
+1. Fixed Issue #2 reported by @jemz: set default timezone in case not set in php.ini
+2. Fixed BC issues caused by ZF2 including Issue #5 reported by @jemz
+3. Upgraded Boostrap to 1.0.0 and Backbone to 2.3.1 by @sexnothing
+
+
+March 14th, 2013
+=============================
+1. Created Pi public project in github/xoops/pi organization
+2. Imported Pi code to Pi public repository from github/taiwen/pi
+3. Announcement of Pi Day Release for Pi Engine
+
+
+Pi-Day: 484a82299ffcfe5d4f537ee8c435a46afcbe8216
+March 13th, 2013
+=============================
+1. Upgraded ZF2 to 2.1.1
+2. Upgraded ZF2 to 2.1.2
+3. Upgraded ZF2 to 2.1.3
+4. Upgraded ZF2 to 2.1.4
+5. Improved SESSION manager by implementing clear of expired items
+
+
+Jan 6th, 2013
+=============================
+1. Upgraded ZF2 to 2.0.5
+2. Changed project name to Pi Engine
+3. Re-designed Back-office information architecture and navigation (Credits: EEFOCUS Team)
+4. Implemented role edit
+5. Implemented permission assignment
+
+
+November 21st, 2012
+=============================
+1. Upgraded ZF2 to 2.0.4
+2. Added convenient methods to 404/denied/exception pages
+3. Added member management
+4. Improved cache mechanism by changing options on-fly
+
+
+October 30th, 2012
+=============================
+1. Added Xoops Engine Upload class with custom rename strategy support
+2. Refactored block management, moved block edit to widget module
+3. Added CaptureTo to HeadScript/HeadStyle/FootScript to avoid duplicated contents
+4. Added gzip compression to response output
+5. Added filesystem manipulation service based on Symphony\Filesystem
+6. Completed custom module assets in themes
+
+
+October 23rd, 2012
+=============================
+1. Changed backend menu to paired menus as following
+
+    =============================================================
+    | Tab | Tab | Tab | Tab | Tab | Tab | Tab | Tab | Tab | Tab |
+    -------------     -------------------------------------------
+    | Sub Tab | Sub Tab | Sub Tab | Sub Tab | Sub Tab | Sub Tab |
+    =============================================================
+
+    ===================
+    | Third Tab       |
+    -------------------
+    | Third Tab       |
+    -------------------
+    | Third Tab       |
+    -------------------
+    | Third Tab       |
+    ===================
+
+
+October 8th, 2012
+=============================
+1. Restored "/doc" in dev branch
+2. Changed application.standard.php to more informative application.front.php
+3. Implemented feed controllers
+4. Implemented site-wide foot scripts, useful for third-party analytics
+5. Implemented asset versioning to flush browser caches
+6. Upgraded ZF2 to 2.0.3dev
+7. Implemented Backbone in vendor
+8. Added widget module for custom blocks
+
+
+August 25th, 2011
+=============================
+1 Added new installer in '/setup'
+2 Added footScript section to layout
+3 Added Redis to system persist
+4 Added Markup component
+5 Added FTP
+6 Upgraded Zend Framework to 1.11.9
+7 Implemented gettext as primary translation engine
+8 Changed license to New BSD License
+
+
+April 20th, 2011
+=============================
+1 Added namespace for app (in /usr/apps/) as "App" and module (in www/modules) as "Module"
+2 Built WYSIWYG editor factory, integrated CKEditor and jQuery based ClEditor
+3 Built security handler and resource, added XSS filter, IP protection, super globals contamination, etc.
+4 Upgraded Zend Framework to 1.11.5
+5 Block is refactored with Xoops/Zend_Form, more controllable with style, title switch, link, etc.
+6 Added block compound, suggested by ezsky/dongbeta etc.
+7 Formulated theme schema with global namespace
+8 Changed .ini file to .ini.php for content protection, suggested by huzhenghui/ezsky/dongbeta, etc.
+9 Added QA mode: only display debug information to specified IPs, suggested by huzhenghui
+
+
+January 10th, 2011
+=============================
+1 Improved and simplified captcha mechanism
+2 Improved bootstrap to allow resource loading on-fly
+3 Added encrypt/decrypt based on 'phpseclib' package
+4 Added autoloader for legacy classes
+5 Changed class \Kernel\Service\Log name to \Kernel\Service\Logger and corresponding engine loggers to avoid conflicts between method logger::log and class name (construction method)
+6 Changed /var/caches to /var/cache, /var/configs to /var/etc, /var/data to /var/log; moved /lib/applications to separate directory /usr
+
+
+November 15th, 2010
+=============================
+1 Added multi-engine support and implemented the alternative engines "Lite", "Perfect" for non-db/non-page-cache mode
+2 Added applet mechanism for non-db widget
+3 Added ini module configs for non-db mode
+4 Added namespace for module/app (scheduled)
+5 Moved application entry files into folder htdocs/Application; Changed mainfile.php to Application/Boot.php, leaving mainfile.php to legacy applications
+
+
+November 9th, 2010
+=============================
+1 Changed namespace for Xoops_Engine to allow for multiple engines
+2 Added persist for class loader
+3 Added extended/custom pluginloader to allow for persist cache
+4 Added memcache support for session save handler
+5 Upgraded Zend Framework to 1.11.0
+6 Upgraded Smarty to 3.0 Final
+7 Refactored XOOPS/Engine APIs
+8 Refactored autoloader to allow classMap, namespace, prefix, module, plugin and adding third-party library on-fly
+
+
+October 30th, 2010
+=============================
+1 Changed Smarty plugin files name to lowercase for Smarty 3
+2 Added persistent data service, providing three storages: APC, memcached, file
+
+
+October 26th, 2010
+=============================
+1 Changed cache path from caches/xoops_cache to caches/xoops
+2 Added cache for bootstrap config
+3 Disabled pluginCache which did not help
+3 Changed hosts.ini, xoops.ini to use PHP native ini format to save time against Xoops::processKey
+
+
+October 20th, 2010
+=============================
+1 Implementation of Xoops Plugin Engine
+
+
+September 30th, 2010
+=============================
+1 Adopted Smarty3
+
+
+August someday, 2010
+The third internal preview package
+=============================
+1 Zend framework 1.10.7
+2 Table and element builder
+3 Form compound element
+4 Autoloader refactor, removed loadClass
+5 Config/Preference refactor, using Zend_Form
+6 Theme installer, inheritance and deployment
+7 Module clone and multi-installation
+8 Comment plugin implementation
+9 Pagination improvement with customizable parameter name
+
+July 28th, 2010
+The second internal preview package
+=============================
+1 User module completeness (80%)
+2 Pagination implementation
+3 Unified authentication with enforced hash policy
+4 Zend form implementation
+5 Path configuration for upload as a writable folder with web access
+
+
+July 1st, 2010
+The first internal preview package
+=============================
+Xoops Engine new architecture with modules of system, default, search (incomplete), MVC (demo) and user (started)
+
+
+Taiwen Jiang
+Xoops/Pi Engine Developer

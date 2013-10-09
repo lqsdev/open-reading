@@ -1,0 +1,38 @@
+Changelog
+
+Oct 18th, Liao Wei
+===============================
+1. Added fadeOut transmission for removal action to backbone.min.js by adding following code to backbone.min.js and/or backbone.js
+<code>
+_.extend(Backbone.View.prototype, {
+    remove:function() {
+       var el = this.$el;
+       el.fadeOut(150, function() {
+           el.remove();
+       });
+   }
+});
+</code>
+2. Added custom data handler upon success
+<code>
+_.extend(Backbone.Model.prototype, {
+    parse: function(resp, xhr) {
+      if (resp.status) {
+         return resp.data;
+      }
+      return "";
+    }
+});
+</code>
+
+
+
+
+April 2th, Liao Wei
+
+========================
+
+1. Updata backbone (Version 1.0.0)
+        methods:
+            1. replace backbone-min.js backbone.js with newest file into 'backbone' folder
+            2. replace underscore-min.js underscore.js with newest file into 'backbone' folder

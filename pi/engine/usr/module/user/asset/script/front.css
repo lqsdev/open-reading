@@ -1,0 +1,156 @@
+/* Common */
+
+.controls-text {
+	padding-top: 3px;
+}
+.gutter {
+	margin: 0 10px;
+}
+.gutter-large {
+	margin: 0 20px;
+}
+/* Home page */
+.user-media {
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+}
+
+.user-media .pull-left {
+	margin: 2px 30px 0 0;
+}
+.user-media-name {
+	margin-right: 5px;
+}
+
+/* Profile */
+.user-avatar-media {
+	margin-bottom: 20px;
+}
+.user-legend-title {
+	float: left;
+	margin: 0 10px 0;
+}
+.user-legend-edit {
+	float: right;
+}
+.user-legend-linea {
+	overflow: hidden;
+	height: 0;
+	border-top: 1px solid #e5e5e5;
+	margin-top: 10px;
+}
+.user-field-dl {
+	border-top: 1px dashed #ccc;
+	padding-top: 20px;
+	margin: 20px 0 30px;
+}
+.user-field-dl:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+.user-field-dl dt {
+	color: #999;
+	font-weight: normal;
+	line-height: 24px;
+}
+.user-field-dl dd {
+	line-height: 24px;
+}
+.user-none-fields {
+	background: #e6e6e6;
+	padding: 40px 0;
+	text-align: center;
+	margin: 20px 0;
+}
+/* Edit */
+.user-profile-back {
+	padding: 8px 10px;
+	margin-bottom: 20px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	display: block;
+}
+.user-profile-back:hover {
+	text-decoration: none;
+}
+.user-profile-back .media-heading {
+	color: #333;
+}
+.user-profile-back:hover .media-heading {
+	color: #005580;
+}
+.user-info-item {
+	margin-bottom: 20px;
+	border: 1px solid #ccc;
+}
+.user-info-header {
+	background: #eee;
+	cursor: move;
+	border-bottom: 1px solid #ccc;
+	text-align: right;
+}
+.user-info-item form,
+.user-info-item-edit .user-info-show {
+	display: none;
+}
+.user-info-item-edit form {
+	display: block;
+}
+.user-info-list {
+    min-height: 20px;
+}
+.user-info-top {
+    margin-bottom: 20px;
+}
+.user-info-title {
+    font-size: 30px;
+    margin-right: 20px;
+    text-transform: capitalize;
+}
+.user-info-title strong {
+
+}
+.user-info-item {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    background: #fff;
+}
+.user-info-item .user-info-show,
+.user-info-item form {
+    padding: 20px 0;
+    margin: 0;
+}
+.user-info-header {
+    background: #eee;
+    cursor: move;
+    border-bottom: 1px solid #ccc;
+    text-align: right;
+    padding-right: 10px;
+}
+.user-info-item form,
+.user-info-item-edit .user-info-show {
+    display: none;
+}
+.user-info-item-edit form {
+    display: block;
+}
+.user-info-item-edit .user-info-header {
+    background: #0188cc;
+}
+.user-info-item-edit .user-info-body {
+    background: #f2fbff;
+}
+.user-info-header .close {
+    float: none;
+}
+.user-info-item-edit .btn-user-edit {
+    color: #fff;
+}
+.user-add-legend {
+    margin-bottom: 20px;
+}
+/* user module custom */
+#pi-user .nav-tabs {
+	margin-bottom: 30px;
+}
