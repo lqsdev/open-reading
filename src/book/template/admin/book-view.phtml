@@ -1,0 +1,19 @@
+<div>
+    <?php
+    echo '书名： ' . $book['title'];
+    ?>
+</div>
+
+<div>
+   <?php
+   echo '封面： ';
+   $image = Pi::url($book['cover']); ?>
+    <img src="<?php echo $this->escape($image) ?>">
+</div>
+
+<div>
+    <?php
+    echo '简介： ';
+    echo $book['introduction'];
+    ?>
+</div>
