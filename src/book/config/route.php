@@ -1,30 +1,17 @@
 <?php
-/**
- * Pi Engine (http://pialog.org)
- *
- * @link         http://code.pialog.org for the Pi Engine source repository
- * @copyright    Copyright (c) Pi Engine http://pialog.org
- * @license      http://pialog.org/license.txt New BSD License
- */
 
-/**
- * Custom route config
- * 
- * @author Zongshu Lin <lin40553024@163.com>
- */
 return array(
-    'article' => array(
+    'book' => array(
         'section'  => 'front',
         'priority' => 100,
 
-        'type'     => 'Module\\Article\\Route\\Article',
+        'type'     => 'Standard',
         'options'  => array(
             'structure_delimiter'   => '/',
             'param_delimiter'       => '/',
             'key_value_delimiter'   => '-',
-            'route'                 => '/a',
             'defaults'        => array(
-                'module'     => 'article',
+                'module'     => 'book',
                 'controller' => 'index',
                 'action'     => 'index',
             ),

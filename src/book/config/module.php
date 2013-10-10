@@ -35,13 +35,15 @@ return array(
             'database'      => array(
                 'sqlfile'      => 'sql/mysql.sql',
                 'schema'       => array(
-                    'book'       => 'table',
-                    'catalogue'  => 'table',
-                    'article'    => 'table',
+                    'book'                  => 'table',
+                    'catalogue'             => 'table',
+                    'catalogue_rel_article' => 'table',
+                    'article'               => 'table',
                 ),
             ),
             // Database meta
             'navigation'    => 'navigation.php',
+            'route'         => 'route.php',
         ),
     ),
 );

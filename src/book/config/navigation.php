@@ -10,7 +10,7 @@
 
 return array(
     'meta'  => array(
-        'cms'    => array(
+        'front'    => array(
             'title'     => _t('Book site navigation'),
             'section'   => 'front',
         ),
@@ -22,13 +22,33 @@ return array(
                 'label'         => _t('Book Homepage'),
                 'route'         => 'default',
                 'controller'    => 'book',
-                'action'        => 'list',
-            ),
-            'dashboard'         => array(
-                'label'         => _t('Dashboard'),
-                'route'         => 'default',
-                'controller'    => 'dashboard',
                 'action'        => 'index',
+            ),
+            'media'             => array(
+                'label'         => _t('Media'),
+                'route'         => 'default',
+                'controller'    => 'media',
+                'action'        => 'list',
+                'resource'      => array(
+                    'resource'  => 'media',
+                ),
+            ),
+        ),
+        'admin'   => array(
+            'book-homepage'  => array(
+                'label'         => _t('Book Homepage'),
+                'route'         => 'default',
+                'controller'    => 'book',
+                'action'        => 'index',
+            ),
+            'media'             => array(
+                'label'         => _t('Media'),
+                'route'         => 'default',
+                'controller'    => 'media',
+                'action'        => 'list',
+                'resource'      => array(
+                    'resource'  => 'media',
+                ),
             ),
         ),
     ),
