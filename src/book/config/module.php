@@ -1,56 +1,57 @@
 <?php
-/**
- * Pi Engine (http://pialog.org)
- *
- * @link         http://code.pialog.org for the Pi Engine source repository
- * @copyright    Copyright (c) Pi Engine http://pialog.org
- * @license      http://pialog.org/license.txt New BSD License
- */
 
 /**
- * Module config and meta
- * 
- * @author Zongshu Lin <lin40553024@163.com>
+ * Base module config
+ *
+ * @copyright       Copyright (c) Long Quan Si ...
+ * @license         All rights reserved
+ * @author          lqsit
+ * @package         Module\Base
+ */
+/**
+ * Application manifest
  */
 return array(
     // Module meta
-    'meta'         => array(
-        'title'         => __('Book'),
-        'description'   => __('General module for content management.'),
-        'version'       => '1.0.1-beta.1',
-        'license'       => 'New BSD',
-        'logo'          => 'image/logo.png',
-        'readme'        => 'README.md',
-        'clonable'      => false,//是否允许重复安装
+    'meta' => array(
+        // Module title, required
+        'title' => __('Book'), 
+        // Version number, required
+        'version' => '0.1.0',
+        // Distribution license, required
+        'license' => 'New BSD',
+        // Logo image, for admin, optional
+        'logo' => 'image/logo.png',
+        'clonable' => false,
     ),
     // Author information
-    'author'        => array(
-        'name'          => 'lqsdev',
-        'email'         => '',
-        'website'       => 'http://www.github.com/lqsdev',
-        'credits'       => 'lqsdev Team.'
-    ),
-    // Module dependency: list of module directory names, optional
-    'dependency'    => array(
+    'author' => array(
+        // Author full name, required
+        'name' => 'lqsic',
+//        'readme' => 'docs/lqsdic-readme.txt',
+       
     ),
     // Maintenance actions
-    'maintenance'   => array(
-        'resource'      => array(
-            'database'      => array(
-                'sqlfile'      => 'sql/mysql.sql',
-                'schema'       => array(
-                    'book'       => 'table',
-                    'catalogue'  => 'table',
-                    'article'    => 'table',
+    'maintenance' => array(
+        // resource
+        'resource' => array(
+            // Database meta
+            'database' => array(
+                // SQL schema/data file
+                'sqlfile' => 'sql/book.sql',
+                // Tables to be removed during uninstall, 
+                // optional - the table list will be generated automatically upon installation
+                'schema' => array(
+                    'book'      => 'table',
+                    'catalogue' => 'table',
+                    'catalogue_rel_article'   => 'table',
+                    'article'        => 'table',                  
                 ),
             ),
-            // Database meta
-            'navigation'    => 'navigation.php',
-            'block'         => 'block.php',
-            'config'        => 'config.php',
-            'route'         => 'route.php',
-            'acl'           => 'acl.php',
-            'page'          => 'page.php',
-        ),
-    ),
+            // Module configs
+            'config' => 'config.php',
+            // Navigation definition
+            'navigation' => 'navigation.php',
+        )
+    )
 );
