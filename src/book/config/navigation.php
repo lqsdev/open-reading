@@ -1,16 +1,8 @@
 <?php
 
-/**
- * Class controller Class
- * @copyright       Copyright (c) lqsit
- * @license         All rights reserved
- * @author          lqsic
- * @package         Module\book
-*/
-
 return array(
     'meta'  => array(
-        'front'    => array(
+        'cms'    => array(
             'title'     => _t('Book site navigation'),
             'section'   => 'front',
         ),
@@ -18,37 +10,36 @@ return array(
     'item'  => array(
         // Default front navigation
         'front'   => array(
-            'book-homepage'  => array(
+            'article-homepage'  => array(
                 'label'         => _t('Book Homepage'),
                 'route'         => 'default',
                 'controller'    => 'book',
                 'action'        => 'index',
             ),
-            'media'             => array(
-                'label'         => _t('Media'),
+            'my-draft'          => array(
+                'label'         => _t('My Draft'),
                 'route'         => 'default',
-                'controller'    => 'media',
-                'action'        => 'list',
-                'resource'      => array(
-                    'resource'  => 'media',
+                'controller'    => 'article',
+                'action'        => 'published',
+                'params'        => array(
+                    'from'          => 'my',
                 ),
             ),
         ),
+        
+        // Default admin navigation
         'admin'   => array(
-            'book-homepage'  => array(
-                'label'         => _t('Book Homepage'),
-                'route'         => 'default',
+            'book'           => array(
+                'label'         => _t('Book List'),
+                'route'         => 'admin',
                 'controller'    => 'book',
-                'action'        => 'index',
+                'action'        => 'list',
             ),
             'media'             => array(
                 'label'         => _t('Media'),
-                'route'         => 'default',
+                'route'         => 'admin',
                 'controller'    => 'media',
                 'action'        => 'list',
-                'resource'      => array(
-                    'resource'  => 'media',
-                ),
             ),
         ),
     ),

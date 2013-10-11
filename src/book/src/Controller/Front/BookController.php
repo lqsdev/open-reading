@@ -17,27 +17,19 @@ use Pi\Mvc\Controller\ActionController;
  */
 class BookController extends ActionController
 {
-
-    /**
-     * Default action if none provided
-     *
-     * @return ViewModel
-     */
-    public function indexAction()
+    public function listAction()
     {
-        $this->redirect()->toRoute('', array('action' => 'view'));
+        $books = array('楞严经', '法华经', '华严经', '心经');
+        
+        $this->view()->assign('books', $books);
+        $this->view()->setTemplate('book-list');
     }
 
-    /**
-     * View book by id.
-     *
-     * @return ViewModel
-     */
     public function viewAction()
     {   
         $book = array(
             'title' => '文殊菩萨心咒',
-            'cover' => 'upload/article/media/2013/10/08/1.jpg',
+            'cover' => 'upload/article/media/2013/10/10/27.jpg',
             'introduction' => "咒语是佛菩萨的秘密藏中自然流露出的语言，
                 当持诵者念诵真言时，就会得到佛菩萨的加持和相应，
                 而感召不可思议的力量。\n

@@ -15,6 +15,7 @@ CREATE TABLE `{catalogue}` (
 
 CREATE TABLE `{catalogue_rel_article}` (
   `id`              int(10) unsigned               NOT NULL AUTO_INCREMENT,
+  `book_id`         int(10) unsigned               NOT NULL,
   `cata_data_id`    int(10) unsigned               NOT NULL,
   `article_id`      int(10) unsigned               NOT NULL,
  PRIMARY KEY        (`id`), 
@@ -27,6 +28,3 @@ CREATE TABLE `{article}` (
   `meta_type`       varchar(32)                     NULL, 
   PRIMARY KEY       (`id`)
 );
-
-
-

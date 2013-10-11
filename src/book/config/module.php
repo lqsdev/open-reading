@@ -12,8 +12,8 @@ return array(
     // Module meta
     'meta'         => array(
         'title'         => __('Book'),
-        'description'   => __('General module for content management.'),
-        'version'       => '1.0.1-beta.1',
+        'description'   => __('General module for book management.'),
+        'version'       => '1.0.0',
         'license'       => 'New BSD',
         'logo'          => 'image/logo.png',
         'readme'        => 'README.md',
