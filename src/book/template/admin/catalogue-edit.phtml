@@ -1,0 +1,19 @@
+<div>
+    这是目录修改页面
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book'), __('Back to Book'));
+    echo $link;
+    ?>
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add An Article'), __('Add An Article'));
+    echo $link;
+    ?>
+</div>

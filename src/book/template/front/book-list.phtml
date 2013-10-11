@@ -1,0 +1,14 @@
+<div>
+    <?php
+    echo '书籍列表';
+    var_dump($books);
+    ?>
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View This Book'), __('View A Book'));
+    echo $link;
+    ?>
+</div>

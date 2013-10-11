@@ -1,0 +1,27 @@
+<div>
+这是文章增加、修改页面
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'view')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View Article'), __('View Article'));
+    echo $link;
+    ?>
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'view')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Catalogue'), __('Back to Catalogue'));
+    echo $link;
+    ?>
+</div>
+
+<div>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book'), __('Back to Book'));
+    echo $link;
+    ?>
+</div>
