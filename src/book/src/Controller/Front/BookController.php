@@ -17,6 +17,11 @@ use Pi\Mvc\Controller\ActionController;
  */
 class BookController extends ActionController
 {
+    public function indexAction()
+    {
+        return $this->redirect()->toRoute('', array('action' => 'list'));
+    }
+    
     public function listAction()
     {
         $books = array(

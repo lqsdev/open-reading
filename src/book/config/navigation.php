@@ -16,15 +16,6 @@ return array(
                 'controller'    => 'book',
                 'action'        => 'index',
             ),
-            'my-draft'          => array(
-                'label'         => _t('My Draft'),
-                'route'         => 'default',
-                'controller'    => 'article',
-                'action'        => 'published',
-                'params'        => array(
-                    'from'          => 'my',
-                ),
-            ),
         ),
         
         // Default admin navigation
@@ -35,11 +26,11 @@ return array(
                 'controller'    => 'book',
                 'action'        => 'list',
             ),
-            'media'             => array(
-                'label'         => _t('Media'),
+            'article'             => array(
+                'label'         => _t('Artilce'),
                 'route'         => 'admin',
-                'controller'    => 'media',
-                'action'        => 'list',
+                'controller'    => 'article',
+                'action'        => 'edit',
             ),
         ),
     ),

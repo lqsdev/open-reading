@@ -1,14 +1,19 @@
-<div>
-    <?php
-    echo '书籍列表';
-    var_dump($books);
-    ?>
+<div class="page-header">
+    <h2>书籍列表</h2>
 </div>
 
+<?php
+foreach ($books as $book)
+{
+?>
 <div>
+    <?php echo $book['title']; ?>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'edit')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Book Catalogue'), __('Edit Book Catalogue'));
+    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'edit', 'bookid' => $book['id'])));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
     echo $link;
     ?>
 </div>
+<?php
+}
+?>

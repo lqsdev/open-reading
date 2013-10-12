@@ -6,7 +6,7 @@
     $this->js($this->assetModule('script/system-msg.js'));
 ?>
 <div class="page-header">
-    <h2><?php echo _escape($title); ?></h2>
+    <h2><?php echo _escape($title) . ':  ' .$bookid; ?></h2>
 </div>
 <div id="js-menu-edit" style="margin-bottom: 10px;">
     <div class="form-actions form-inline" style="margin: 0 0 10px 0;">
@@ -33,6 +33,7 @@
             <span class="btn btn-small js-toggle" title="<?php _e('Click to toggle edit'); ?>">
                 <?php _e('Edit'); ?>
             </span>
+            <button class="btn btn-small js-manage">Manage</button>
             <button class="btn btn-small js-delete">×</button>
         </div>
     </div>
@@ -92,6 +93,7 @@
         events: {
             'click .js-toggle': 'toggle',
             'click .js-delete': 'deleteItem',
+            'click .js-manage': 'manageAritcle',
             'click .tree-item-save': 'saveItem'
         },
         initialize: function() {
