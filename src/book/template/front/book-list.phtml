@@ -1,14 +1,24 @@
-<div>
-    <?php
-    echo '书籍列表';
-    var_dump($books);
-    ?>
+<div class="page-header">
+    <h2>书籍列表</h2>
 </div>
 
+<?php
+foreach ($books as $book)
+{
+?>
 <div>
-    <?php
-    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View This Book'), __('View A Book'));
-    echo $link;
-    ?>
+    <div>
+        <?php echo $book['title']; ?>
+    </div>
+    <div>
+        <?php
+        $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
+        $image = $this->assetModule($book['cover_url']);
+        $link = sprintf('<a href="%s" title="%s"><img src="%s"></a>', $url, __('View This Book'), $image);
+        echo $link;
+        ?>
+    </div>
 </div>
+<?php
+}
+?>

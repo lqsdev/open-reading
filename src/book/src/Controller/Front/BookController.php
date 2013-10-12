@@ -19,17 +19,37 @@ class BookController extends ActionController
 {
     public function listAction()
     {
-        $books = array('楞严经', '法华经', '华严经', '心经');
+        $books = array(
+            array(    'id'  => 1,
+                    'title' => '森林心',
+                'cover_url' => 'image/book1.png'),
+            array(    'id'  => 2,
+                    'title' => '好消息',
+                'cover_url' => 'image/book2.png'),
+            array(    'id'  => 3,
+                    'title' => '龙队',
+                'cover_url' => 'image/book3.png'),
+            array(    'id'  => 4,
+                    'title' => '森林心',
+                'cover_url' => 'image/book1.png'),
+            array(    'id'  => 5,
+                    'title' => '好消息',
+                'cover_url' => 'image/book2.png'),
+            array(    'id'  => 6,
+                    'title' => '龙队',
+                'cover_url' => 'image/book3.png'));
         
         $this->view()->assign('books', $books);
         $this->view()->setTemplate('book-list');
     }
 
     public function viewAction()
-    {   
+    {
+        $id = $this->params('id');
         $book = array(
-            'title' => '文殊菩萨心咒',
-            'cover' => 'upload/article/media/2013/10/10/27.jpg',
+            'id'    => $id,
+            'title' => '森林心',
+            'cover_url' => 'image/book1.png',
             'introduction' => "咒语是佛菩萨的秘密藏中自然流露出的语言，
                 当持诵者念诵真言时，就会得到佛菩萨的加持和相应，
                 而感召不可思议的力量。\n

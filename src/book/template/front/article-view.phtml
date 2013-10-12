@@ -1,33 +1,19 @@
 <div>
     <?php
-    echo '书名： ' . $book['title'];
+    echo '文章ID： ' . $article['id'];
     ?>
 </div>
 
 <div>
-   <?php
-   echo '封面： ';
-   $image = Pi::url($book['cover']);
-   ?>
-    <img src="<?php echo $this->escape($image) ?>">
+    <h2>
+        <?php
+        echo $article['title'];
+        ?>
+    </h2>
 </div>
 
 <div>
     <?php
-    echo '简介： ';
-    echo $book['introduction'];
+    echo $article['content'];
     ?>
 </div>
-
-<div>
-    目录在这里
-</div>
-
-<div>
-    <?php
-    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book'), __('Back to Book'));
-    echo $link;
-    ?>
-</div>
-

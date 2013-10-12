@@ -1,5 +1,11 @@
 <div>
     <?php
+    echo '书籍ID： ' . $book['id'];
+    ?>
+</div>
+
+<div>
+    <?php
     echo '书名： ' . $book['title'];
     ?>
 </div>
@@ -7,7 +13,7 @@
 <div>
    <?php
    echo '封面： ';
-   $image = Pi::url($book['cover']);
+   $image = $this->assetModule($book['cover_url']);
    ?>
     <img src="<?php echo $this->escape($image) ?>">
 </div>
@@ -20,7 +26,14 @@
 </div>
 
 <div>
-    目录在这里
+    <h3>
+        目录在这里
+    </h3>
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'view', 'id' => 1)));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View This Article'), __('View This Article'));
+    echo $link;
+    ?>    
 </div>
 
 <div>
