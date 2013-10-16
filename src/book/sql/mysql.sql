@@ -10,7 +10,7 @@ CREATE TABLE `{book}` (
 CREATE TABLE `{catalogue}` (
   `id`              int(10) unsigned                NOT NULL AUTO_INCREMENT,
   `data`            text                            NULL,
- PRIMARY KEY        (`id`),
+ PRIMARY KEY        (`id`)
 );
 
 CREATE TABLE `{catalogue_rel_article}` (
@@ -18,7 +18,7 @@ CREATE TABLE `{catalogue_rel_article}` (
   `book_id`         int(10) unsigned               NOT NULL,
   `cata_data_id`    int(10) unsigned               NOT NULL,
   `article_id`      int(10) unsigned               NOT NULL,
- PRIMARY KEY        (`id`), 
+ PRIMARY KEY        (`id`)
 );
 
 CREATE TABLE `{article}` (

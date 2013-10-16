@@ -38,6 +38,8 @@ class ArticleController extends ActionController
                 'title'   => $data['title'],
                 'content' => $data['content'],
                 );
+            $row = $this->getModel('article')->createRow($inputData);
+            $row->save(); 
         }
         $this->view()->assign('form', $form);
         $this->view()->setTemplate('article-edit');
