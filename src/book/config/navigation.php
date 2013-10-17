@@ -32,6 +32,12 @@ return array(
                 'controller'    => 'article',
                 'action'        => 'edit',
             ),
+             'media'             => array(
+                'label'         => _t('Media'),
+                'route'         => 'admin',
+                'controller'    => 'media',
+                'action'        => 'list',
+            ),
         ),
     ),
 );

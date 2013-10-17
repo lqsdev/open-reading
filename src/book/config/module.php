@@ -44,6 +44,7 @@ return array(
             // Database meta
             'navigation'    => 'navigation.php',
             'route'         => 'route.php',
+            'config'        => 'config.php',
         ),
     ),
 );
