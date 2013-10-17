@@ -9,7 +9,7 @@ foreach ($books as $book)
 <div>
     <?php echo $book['title']; ?>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'edit', 'bookid' => $book['id'])));
+    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $book['id'], 'cid' => $book['catalogue_id'])));
     $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
     echo $link;
     ?>

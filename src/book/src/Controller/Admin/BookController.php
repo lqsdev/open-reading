@@ -19,26 +19,11 @@ class BookController extends ActionController
 {
     public function listAction()
     {
-        $books = array(
-            array(    'id'  => 1,
-                    'title' => '森林心',
-                'cover_url' => 'image/book1.png'),
-            array(    'id'  => 2,
-                    'title' => '好消息',
-                'cover_url' => 'image/book2.png'),
-            array(    'id'  => 3,
-                    'title' => '龙队',
-                'cover_url' => 'image/book3.png'),
-            array(    'id'  => 4,
-                    'title' => '森林心',
-                'cover_url' => 'image/book1.png'),
-            array(    'id'  => 5,
-                    'title' => '好消息',
-                'cover_url' => 'image/book2.png'),
-            array(    'id'  => 6,
-                    'title' => '龙队',
-                'cover_url' => 'image/book3.png'));
-        
+        $model = $this->getModel('book');
+        $select = $model->select();
+        $select->order(array('id'));
+        $books = $model->selectWith($select);        
+
         $this->view()->assign('books', $books);
         $this->view()->setTemplate('book-list');
     }

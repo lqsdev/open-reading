@@ -19,10 +19,13 @@ class CatalogueController extends ActionController
 {
     public function editAction()
     {   
-        $bookid = $this->params('bookid');
-        $data = '[{"label":"\u7b2c\u4e00\u7ae0","id":1,"pid":0,"depth":0},{"label":"\u7b2c\u4e00\u8282","id":2,"pid":1,"depth":1},{"label":"\u7b2c\u4e00\u5c0f\u8282","id":3,"pid":2,"depth":2},{"label":"\u7b2c\u4e8c\u7ae0","id":4,"pid":0,"depth":0},{"label":"\u7b2c\u4e09\u7ae0","id":5,"pid":0,"depth":0}]';
-        $pageList = json_decode($data);        
-        $this->view()->assign('bookid', $bookid);
+        $bid = $this->params('bid');
+        $cid = $this->params('cid');
+        $row = $this->getModel('catalogue')->find($cid);
+        $pageList = $row == null ?  '' : json_decode($row['data']);
+        
+        $this->view()->assign('bid', $bid);
+        $this->view()->assign('cid', $cid);
         $this->view()->assign('title', 'Book Catalogue Edit');
         $this->view()->assign('pages', $pageList);
         $this->view()->setTemplate('catalogue-edit');
@@ -30,20 +33,35 @@ class CatalogueController extends ActionController
     
     public function saveAction()
     {
-        $status = 1;
-        $message = __('Catalogue data saved successfully.');
-
-        $bookid    = $this->request->getPost('bookid');
+        $cid = $this->request->getPost('cid');
         $catalogue = $this->request->getPost('catalogue');
-
-        return array(
-            'status'    => $status,
-            'message'   => $message,
-        );
+        
+        $data = json_encode($catalogue);
+        $row = $this->getModel('catalogue')->find($cid);
+        if ($row == null) {
+            return array(
+                'status' => 0,
+                'message' => __('Save catalogue data failed.')
+            );
+        } else {
+            $row->assign(array('id' => $cid, 'data' => $data));
+            $row->save(false);
+            return array(
+                'status' => 1,
+                'message' => __('Catalogue data saved successfully.')
+            );
+        }
     }
   
     public function editItemAction()
-    {   
+    {
+        $bid = $this->params('bid');
+        $cid = $this->params('cid');
+
+        $model = $this->getModel('catalogue_rel_article');
+        $select = $model->select()->where(array('book_id' => $bid, 'cata_data_id' => $cid));
+        $select->order(array('id'));
+        $article = $model->selectWith($select); 
         $this->view()->setTemplate('catalogue-edit-item');
     }
 }
