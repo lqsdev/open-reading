@@ -6,7 +6,7 @@
     $this->js($this->assetModule('script/system-msg.js'));
 ?>
 <div class="page-header">
-    <h2><?php echo _escape($title) . ':  ' .$bookid; ?></h2>
+    <h2><?php echo _escape($title) . ':  ' . $id; ?></h2>
 </div>
 <div id="js-menu-edit" style="margin-bottom: 10px;">
     <div class="form-actions form-inline" style="margin: 0 0 10px 0;">
@@ -93,7 +93,7 @@
         events: {
             'click .js-toggle': 'toggle',
             'click .js-delete': 'deleteItem',
-            'click .js-manage': 'manageAritcle',
+            'click .js-manage': 'manageArticle',
             'click .tree-item-save': 'saveItem'
         },
         initialize: function() {
@@ -131,6 +131,10 @@
             this.$el.html(_.template(this.template,this.model.toJSON()))[0].className = 'tree-item menu-item-depth' + this.model.get('depth');
             this.$('[name=url]').tooltip();
             return this;
+        },
+        manageArticle: function() {
+            var cdid = this.model.get('id');
+            window.open("<?php echo $this->url('', array('controller' => 'catalogue', 'action' => 'editItem', 'bid' => $bid));?>" + '/cdid/' + cdid);
         }
     });
     var MenuListItemView = Backbone.View.extend({
@@ -317,7 +321,7 @@
                 ret.push($(this).data('model').toJSON());
             });
             $.post('<?php echo $this->url('', array('action' => 'save')); ?>', {
-                bookid: '<?php echo $bookid; ?>',
+                cid: '<?php echo $cid; ?>',
                 catalogue: ret
             }).done(function(result) {
                 result = $.parseJSON(result);
