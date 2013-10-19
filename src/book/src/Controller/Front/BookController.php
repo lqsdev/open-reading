@@ -25,6 +25,7 @@ class BookController extends ActionController
     public function listAction()
     {
        
+        //$columns = array('id', 'title', 'cover_url', 'introduction');
         $columns = array('id', 'title', 'cover_url');
         $model  = $this->getModel('book');
         $select = $model->select()

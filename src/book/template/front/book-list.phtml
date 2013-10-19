@@ -1,24 +1,87 @@
-<div class="page-header">
-    <h2>书籍列表</h2>
-</div>
+<?php
+$this->bootstrap();
+$this->jQuery();
+$this->Backbone();
+$this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
+    //$this->css($this->assetModule('script/bootstrap.min.css'));
+?>
 
-<?php
-foreach ($books as $book)
-{
-?>
-<div>
-    <div>
-        <?php echo $book['title']; ?>
-    </div>
-    <div>
-        <?php
-        $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
-        $image = $this->assetModule($book['cover_url']);
-        $link = sprintf('<a href="%s" title="%s"><img src="%s"></a>', $url, __('View This Book'), $image);
-        echo $link;
-        ?>
-    </div>
-</div>
-<?php
+<style type="text/css">
+.book-list{
+    font-family: "微軟雅黑";
+    margin: 10px 0;
 }
-?>
+.book-item{
+    text-align: center;
+    margin-top: 10px;
+    border: 1px solid #cccccc;
+    padding: 5px;
+    border-radius: 3px;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+}
+.book-desc a{
+    color: black;
+    text-decoration: none;
+    line-height: 1.5em;
+    height: 1.5em;
+    display: inline-block;
+
+}
+</style>
+
+
+<div class="container">
+    <section class="page-header" >
+        <h2>书籍列表</h2>
+    </section>
+
+    <section class="book-list row-fluid">
+        <ul class="thumbnails">
+            <?php
+            foreach ($books as $book)
+            {
+                ?>
+                <li class="span4">
+                    <div class="book-item thumbnail">
+
+                        <div class="book-cover">
+                            <?php
+                            $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
+                            $image = $this->assetModule($book['cover_url']);
+                            $link = sprintf('<a href="%s" title="%s"><img src="%s" class="img-rounded"></a>', $url, __('View This Book'), $image);
+                            echo $link;
+                            ?>
+                        </div>
+                        <div class="book-desc">
+                            <h2>
+                            <a class="" href="#"> <?php echo $book['title']; ?> </a>
+                            </h2>
+                            <p><?php echo $book['introduction']; ?></p>
+                        </div>
+                    </div>
+                </li>
+                <?php
+            }
+            ?>
+        </ul>
+    </section>
+
+    <section>
+        <div class="pagination pagination-centered">
+            <ul>
+                <li><a href="#">Prev</a></li>
+                <li><a href="#">1</a></li>
+                <li><a href="#">2</a></li>
+                <li><a href="#">3</a></li>
+                <li><a href="#">4</a></li>
+                <li><a href="#">5</a></li>
+                <li><a href="#">Next</a></li>
+            </ul>
+        </div> 
+        
+    </section>
+
+</div><!-- /.container -->
+
+
