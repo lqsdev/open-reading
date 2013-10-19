@@ -1,27 +1,23 @@
+<?php
+foreach($articles as $article) {
+?>
 <div>
-这是文章查看页面
+    <?php
+    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit', 'id' => $article['id'])));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, $article['introduction'], $article['title']);
+    echo $link;
+    ?> ?>
 </div>
+
+<?php
+}
+?>
 
 <div>
     <?php
     $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Article'), __('Edit Article'));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add New Article'), __('Add New Article'));
     echo $link;
     ?>
 </div>
 
-<div>
-    <?php
-    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Catalogue'), __('Back to Catalogue'));
-    echo $link;
-    ?>
-</div>
-
-<div>
-    <?php
-    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book'), __('Back to Book'));
-    echo $link;
-    ?>
-</div>

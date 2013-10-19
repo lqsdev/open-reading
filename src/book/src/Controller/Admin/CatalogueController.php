@@ -38,6 +38,7 @@ class CatalogueController extends ActionController
         
         $data = json_encode($catalogue);
         $row = $this->getModel('catalogue')->find($cid);
+
         if ($row == null) {
             return array(
                 'status' => 0,
@@ -58,10 +59,19 @@ class CatalogueController extends ActionController
         $bid = $this->params('bid');
         $cid = $this->params('cid');
 
+        $model = $this->getModel('article');
+        $tableArticle = $model->getTable();
+        
         $model = $this->getModel('catalogue_rel_article');
-        $select = $model->select()->where(array('book_id' => $bid, 'cata_data_id' => $cid));
+        $select = $model->select()
+                ->jion(array('article' => $tableArticle),
+                        $tableArticle.'.id = article_id',
+                        array('title', 'introduction'), Select::JOIN_LEFT)
+                ->where(array('book_id' => $bid, 'cata_data_id' => $cid));
         $select->order(array('id'));
-        $article = $model->selectWith($select); 
+        $articles = $model->selectWith($select);
+        
+        $this->view()->assign('articles', $articles);
         $this->view()->setTemplate('catalogue-edit-item');
     }
 }
