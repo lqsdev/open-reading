@@ -1,19 +1,31 @@
-<div>
-    <?php
-    echo '文章ID： ' . $article['id'];
-    ?>
-</div>
+<?php
+$this->bootstrap();
+$this->jQuery();
+$this->Backbone();
+$this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
+?>
 
-<div>
-    <h2>
+<div class="container">
+    <div>
         <?php
-        echo $article['title'];
+        echo '文章ID： ' . $article['id'];
         ?>
-    </h2>
+    </div>
+
+    <div>
+        <h2>
+            <?php
+            echo $article['title'];
+            ?>
+        </h2>
+    </div>
+
+    <div>
+        <p>
+        <?php
+        echo $article['content'];
+        ?>
+        </p>
+    </div>
 </div>
 
-<div>
-    <?php
-    echo $article['content'];
-    ?>
-</div>
