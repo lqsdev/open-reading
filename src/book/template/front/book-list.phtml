@@ -1,109 +1,62 @@
-<?php
-$this->bootstrap();
-$this->jQuery();
-$this->Backbone();
-$this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
-    //$this->css($this->assetModule('script/bootstrap.min.css'));
-?>
 
 <style type="text/css">
-
-
-* { padding: 0; margin: 0;}
-.book-list {
-  margin: 100px auto;
-  border:1px solid red;
-}
-.book-list .book-item {
-  float: left;
-  width: 200px;
-  height: 250px;
-  margin: 10px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid rgba(0,0,0,.3);
-}
-.book-list .book-item .book-cover {
-  height: 200px;
-  overflow: hidden;
-}
-.book-item .book-cover img {
-  width: 100%;
-}
-.book-item .book-desc {
-  list-style: none;
-}
-.book-item .book-desc .title {
-  font-size: 12px;
-  width: 180px;
-  overflow: hidden;
-  padding:10px;
-  color: rgba(0,0,0,.2);
-}
-.book-desc a{
-    color: black;
-    text-decoration: none;
-    line-height: 1.5em;
-    height: 1.5em;
-    display: inline-block;
-
-}
-.clear-fix {clear: both;}
-
+.caption h5{text-align:center;}
+.boder_div{border-bottom:1px solid #ccc;height:0;margin-bottom:40px;}
 </style>
 
-
 <div class="container">
-    <section class="page-header" >
-        <h2>书籍列表</h2>
-    </section>
-
-    <section class="book-list row-fluid">
-        <ul class="thumbnails">
-            <?php
-            foreach ($books as $book)
-            {
-                ?>
-                <li class="span4" style="border:1px solid red;">
-                    <div class="book-item thumbnail" style="border:1px solid red;">
-
-                        <div class="book-cover">
-                            <?php
-                            $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
-                            $image = $this->assetModule($book['cover_url']);
-                            $link = sprintf('<a href="%s" title="%s"><img src="%s" class="img-rounded"></a>', $url, __('View This Book'), $image);
-                            echo $link;
-                            ?>
-                        </div>
-                        <div class="book-desc">
-                            <h2 >
-                            <a class="title" href="#"> <?php echo $book['title']; ?> </a>
-                            </h2>
-                            <p><?php echo $book['introduction']; ?></p>
-                        </div>
-                    </div>
-                </li>
-                <?php
-            }
+  <div class="row">
+    <div class="span1"></div>
+    <div class="span10">
+      <div class="row-fluid">
+        <ul class="book-list thumbnails span12">
+          <?php
+          for ($i=1; $i < count($books); $i++) { 
             ?>
-        </ul>
-    </section>
+            <li class="book-item span4 ">
+              <?php
+              $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $books[$i]['id'])));
+              $image = $this->assetModule($books[$i]['cover_url']);
+              $link = sprintf('<a class="thumbnail" href="%s" title="%s"><img src="%s" ></a>', $url, __('View This Book'), $image);
+              echo $link;
+              ?>
+              <div class="caption book-desc">
+                <h5>
+                  <?php
+                  $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $$books[$i]['id'])));
+                  $image = $this->assetModule($books[$i]['cover_url']);
+                  $link = sprintf('<a class="title" href="%s"> %s </a>', $url,$books[$i]['title']);
+                  echo $link;
+                  ?>
+                </h5>
+              </div>
+            </li>
+            <?php 
+            if ($i%3==0) {
+              ?>
 
-    <section>
-        <div class="pagination pagination-centered">
-            <ul>
-                <li><a href="#">Prev</a></li>
-                <li><a href="#">1</a></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li><a href="#">Next</a></li>
             </ul>
-        </div> 
-        
-    </section>
-
-</div><!-- /.container -->
-
-
+          </div>
+        </div>
+        <div class="span1"></div>
+      </div>
+      <div class="row ">
+        <div class="span1"></div>
+        <div class="span10 boder_div"></div>
+        <div class="span1"></div>
+      </div>
+      <div class="row">
+        <div class="span1"></div>
+        <div class="span10">
+          <div class="row-fluid">
+            <ul class="book-list thumbnails span12">
+              <?php    
+            }//end if
+          }//end for
+          ?>
+        </ul>
+      </div>
+    </div>
+    <div class="span1"></div>
+  </div>
+</div>
