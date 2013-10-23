@@ -4,28 +4,25 @@ $this->jQuery();
 $this->Backbone();
 $this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
 ?>
+<style type="text/css">
+.detail_title{text-align:center;}
+.detail_content{margin-top:30px;}
+</style>
 
 <div class="container">
-    <div>
-        <?php
-        echo '文章ID： ' . $article['id'];
-        ?>
-    </div>
-
-    <div>
-        <h2>
-            <?php
-            echo $article['title'];
-            ?>
-        </h2>
-    </div>
-
-    <div>
-        <p>
-        <?php
-        echo $article['content'];
-        ?>
-        </p>
+    <div class="row ">
+        <div class="span12">
+            <h1 class="detail_title">
+                <?php
+                echo $article['title'];
+                ?></h1>
+                <div class="detail_content">
+                 <p>
+                    <?php
+                    echo $article['content'];
+                    ?>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
-
