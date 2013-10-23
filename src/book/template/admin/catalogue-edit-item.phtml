@@ -1,27 +1,44 @@
-<div>
-这是文章查看页面
+<div class="page-header">
+    <h2>Book Articles</h2>
 </div>
-
+<left>
 <div>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Article'), __('Edit Article'));
+    $url = $this->url('',array('controller' => 'article', 'action' => 'edit', 'bid' => $bid, 'cdid' => $cdid));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add New Article'), __('Add New Article'));
     echo $link;
     ?>
 </div>
-
-<div>
+</left>
+<table class="table-striped table-condensed">
+    <tr>
+        <th class="span6"><?php echo __('Article Title'); ?></th>
+        <th class="span3"><?php echo __('Operation'); ?></th>
+    </tr>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Catalogue'), __('Back to Catalogue'));
-    echo $link;
+    foreach ($articles as $article)
+    {
     ?>
-</div>
-
-<div>
+    <tr>
+        <td>
+            <center><?php echo $article['title']; ?></center>
+        </td>
+        <td>
+            <center>
+                    <?php
+                    $url = $this->url('', array('controller' => 'article',
+                        'action' => 'edit',
+                        'bid' => $bid,
+                        'cdid' => $cdid,
+                        'id' => $article['article_id']));
+                    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Article'), '<i class="icon-edit"></i>');
+                    echo $link;
+                    ?>
+            </center>
+        </td>
+    </tr>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view')));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book'), __('Back to Book'));
-    echo $link;
+    }
     ?>
-</div>
+</table>
+

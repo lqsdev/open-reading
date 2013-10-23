@@ -271,8 +271,8 @@
             var input = this.$('.js-add-label'),
                 val = $.trim(input.val());
             if (val) {
-                this.collection.add({
-                    id: (new Date).getTime(),
+                this.collection.add({ // 根据当前时间给出一个唯一id
+                    id: parseInt(((new Date).getTime() - new Date('2013-10-23').getTime()) / 100),
                     label: val
                 });
             }

@@ -10,6 +10,7 @@
 
 namespace Module\Book\Controller\Admin;
 
+use \Zend\Db\Sql\Select;
 use Pi\Mvc\Controller\ActionController;
 
 /**
@@ -20,7 +21,10 @@ class CatalogueController extends ActionController
     public function editAction()
     {   
         $bid = $this->params('bid');
-        $cid = $this->params('cid');
+
+        $row = $this->getModel('book')->find($bid);
+        $cid = $row['catalogue_id'];
+
         $row = $this->getModel('catalogue')->find($cid);
         $pageList = $row == null ?  '' : json_decode($row['data']);
         
@@ -35,20 +39,22 @@ class CatalogueController extends ActionController
     {
         $cid = $this->request->getPost('cid');
         $catalogue = $this->request->getPost('catalogue');
-        
         $data = json_encode($catalogue);
+
         $row = $this->getModel('catalogue')->find($cid);
         if ($row == null) {
+            $row = $this->getModel('catalogue')->createRow(array('id' => $cid, 'data' => $data));
+            $row->save(false);
             return array(
-                'status' => 0,
-                'message' => __('Save catalogue data failed.')
+                'status' => 1,
+                'message' => __('Insert catalogue succeed.')
             );
         } else {
             $row->assign(array('id' => $cid, 'data' => $data));
             $row->save(false);
             return array(
                 'status' => 1,
-                'message' => __('Catalogue data saved successfully.')
+                'message' => __('Update catalogue succeed.')
             );
         }
     }
@@ -56,12 +62,24 @@ class CatalogueController extends ActionController
     public function editItemAction()
     {
         $bid = $this->params('bid');
-        $cid = $this->params('cid');
+        $cdid = $this->params('cdid');
 
+        $articleTable = $this->getModel('article')->getTable();
+        $relTable = $this->getModel('catalogue_rel_article')->getTable();
         $model = $this->getModel('catalogue_rel_article');
-        $select = $model->select()->where(array('book_id' => $bid, 'cata_data_id' => $cid));
+
+        $select = $model->select()
+                ->join(array('article' => $articleTable),
+                         $relTable. '.article_id = article.id',
+                        array('title'),
+                        Select::JOIN_LEFT)
+                ->where(array('book_id' => $bid, 'cata_data_id' => $cdid));
         $select->order(array('id'));
-        $article = $model->selectWith($select); 
+        $articles = $model->selectWith($select);
+
+        $this->view()->assign('bid', $bid);
+        $this->view()->assign('cdid', $cdid);
+        $this->view()->assign('articles', $articles);
         $this->view()->setTemplate('catalogue-edit-item');
     }
 }
