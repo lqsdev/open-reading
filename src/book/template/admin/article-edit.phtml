@@ -210,15 +210,15 @@
         },
         remove          : function() {
             var parameter = '<?php echo $form->get('id')->getValue()  
-                            ? 'id-' . $form->get('id')->getValue()
+                            ? 'id/' . $form->get('id')->getValue()
                             : null ?>';
             if (!parameter) {
-                parameter = 'fake_id-' + page.featureFakeId;
+                parameter = 'fake_id/' + page.featureFakeId;
             }
             $.getJSON('<?php echo $this->url(
                 '',
                 array(
-                    'controller' => 'draft',
+                    'controller' => 'article',
                     'action'     => 'remove-image'
                 )
             ); ?>' + parameter).done(function() {

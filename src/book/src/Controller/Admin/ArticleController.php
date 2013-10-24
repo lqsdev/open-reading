@@ -153,4 +153,56 @@ class ArticleController extends ActionController
         echo json_encode($return);
         exit();
     }
+
+    public function removeImageAction()
+    {
+        Pi::service('log')->active(false);
+        $id           = Service::getParam($this, 'id', 0);
+        $fakeId       = Service::getParam($this, 'fake_id', 0);
+        $affectedRows = 0;
+        $module       = $this->getModule();
+
+        if ($id) {
+            $rowDraft = $this->getModel('draft')->find($id);
+
+            if ($rowDraft && $rowDraft->image) {
+
+                $thumbUrl = Service::getThumbFromOriginal($rowDraft->image);
+                if ($rowDraft->article) {
+                    $modelArticle = $this->getModel('article');
+                    $rowArticle   = $modelArticle->find($rowDraft->article);
+                    if ($rowArticle && $rowArticle->image != $rowDraft->image) {
+                        // Delete file
+                        @unlink(Pi::path($rowDraft->image));
+                        @unlink(Pi::path($thumbUrl));
+                    }
+                } else {
+                    @unlink(Pi::path($rowDraft->image));
+                    @unlink(Pi::path($thumbUrl));
+                }
+
+                // Update db
+                $rowDraft->image = '';
+                $affectedRows    = $rowDraft->save();
+            }
+        } else if ($fakeId) {
+            $session = Service::getUploadSession($module, 'feature');
+
+            if (isset($session->$fakeId)) {
+                $uploadInfo = $session->$fakeId;
+
+                $url = Service::getThumbFromOriginal($uploadInfo['tmp_name']);
+                $affectedRows = unlink(Pi::path($uploadInfo['tmp_name']));
+                @unlink(Pi::path($url));
+
+                unset($session->$id);
+                unset($session->$fakeId);
+            }
+        }
+
+        return array(
+            'status'    => $affectedRows ? true : false,
+            'message'   => 'ok',
+        );
+    }
 }
