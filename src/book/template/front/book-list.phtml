@@ -1,62 +1,25 @@
-
-<style type="text/css">
-.caption h5{text-align:center;}
-.boder_div{border-bottom:1px solid #ccc;height:0;margin-bottom:40px;}
-</style>
-
-<div class="container">
-  <div class="row">
-    <div class="span1"></div>
-    <div class="span10">
-      <div class="row-fluid">
-        <ul class="book-list thumbnails span12">
-          <?php
-          for ($i=1; $i < count($books); $i++) { 
-            ?>
-            <li class="book-item span4 ">
-              <?php
-              $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $books[$i]['id'])));
-              $image = $this->assetModule($books[$i]['cover_url']);
-              $link = sprintf('<a class="thumbnail" href="%s" title="%s"><img src="%s" ></a>', $url, __('View This Book'), $image);
-              echo $link;
-              ?>
-              <div class="caption book-desc">
-                <h5>
-                  <?php
-                  $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $$books[$i]['id'])));
-                  $image = $this->assetModule($books[$i]['cover_url']);
-                  $link = sprintf('<a class="title" href="%s"> %s </a>', $url,$books[$i]['title']);
-                  echo $link;
-                  ?>
-                </h5>
-              </div>
-            </li>
-            <?php 
-            if ($i%3==0) {
-              ?>
-
-            </ul>
-          </div>
-        </div>
-        <div class="span1"></div>
-      </div>
-      <div class="row ">
-        <div class="span1"></div>
-        <div class="span10 boder_div"></div>
-        <div class="span1"></div>
-      </div>
-      <div class="row">
-        <div class="span1"></div>
-        <div class="span10">
-          <div class="row-fluid">
-            <ul class="book-list thumbnails span12">
-              <?php    
-            }//end if
-          }//end for
-          ?>
-        </ul>
-      </div>
-    </div>
-    <div class="span1"></div>
-  </div>
+<div class="page-header">
+    <h2>Book List</h2>
 </div>
+<?php
+foreach ($books as $book) {
+?>
+    <div class="span3">
+        <div class="row">
+            <?php
+            $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
+            $image = $this->assetModule($book['cover_url']);
+            $link = sprintf('<a href="%s" title="%s"><img src="%s" ></a>', $url, __('View This Book'), $image);
+            echo $link;
+            ?>
+        </div>
+        <div class="row">
+            <?php
+            $link = sprintf('<a class="title" href="%s"> %s </a>', $url, $book['title']);
+            echo $link;
+            ?>
+        </div>
+    </div>
+<?php
+}
+?>
