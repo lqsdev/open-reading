@@ -25,7 +25,8 @@ CREATE TABLE `{article}` (
   `id`              int(10) unsigned                NOT NULL AUTO_INCREMENT,
   `title`           varchar(255)                    NOT NULL,     
   `content`         text                            NULL, 
-  `meta_type`       varchar(32)                     NULL, 
+  `meta_type`       varchar(32)                     NULL,
+  `image`           varchar(255)                    NOT NULL DEFAULT '',
   PRIMARY KEY       (`id`)
 );
 CREATE TABLE `{media}` (

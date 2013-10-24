@@ -38,6 +38,21 @@ class ArticleForm extends BaseForm {
             'options' => $editorConfig,
            
         ));
+        
+        $this->add(array(
+            'name' => 'id',
+            'attributes' => array(
+                'type' => 'hidden',              
+            ),
+        ));
+        
+        $this->add(array(
+            'name' => 'fake_id',
+            'attributes' => array(
+                'type' => 'hidden',
+                'value' => uniqid(),
+            ),
+        ));
 
         $this->add(array(
             'name' => 'submit',

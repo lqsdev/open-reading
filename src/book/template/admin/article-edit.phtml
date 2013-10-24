@@ -1,3 +1,12 @@
+<?php
+    $this->jQuery('extension/fileupload-min.js');
+    $this->bootstrap(array(
+        'js/bootstrap.min.js'
+    ));
+    $this->css($this->assetModule('script/article-front-admin.css'));
+    $this->Backbone();
+?>
+
 <?php echo $this->form()->openTag($form) ?>
 <div>
 <?php $element = $form->get('title'); ?>    
@@ -23,3 +32,303 @@
     </div>
 </div>
 <?php echo $this->form()->closeTag() ?>
+
+<div class="widget" id="jsUpload">
+    <div class="widget-header">
+        <strong><?php _e('Feature image') ?></strong>
+    </div>
+    <div class="clearfix widget-body">
+        <div class="upload-image-wrap" style="cursor: default; width: <?php echo $thumbWidth . 'px' ?>; height: <?php echo $thumbHeight . 'px' ?>;">
+        </div>
+        <div class="pull-left" style="margin-top: 20px;">
+            <button class="btn upload fileinput-button" data-toggle="modal" href="#upload-box">
+                <?php _e('Upload') ?>
+            </button>
+            <span class="muted"><?php echo _e('image size '). $width . '*' . $height; ?></span>
+        </div>
+        <!-- Start modal box -->
+        <?php include 'media-image-box.phtml' ?>
+    </div>
+</div>
+
+<script>
+(function($) {
+    var page = {
+    id      :"<?php echo $form->get('id')->getValue() ?: $form->get('fake_id')->getValue(); ?>",
+    ajaxId  : function() {
+        return "<?php echo $form->get('id')->getValue()
+            ? 'id/' . $form->get('id')->getValue() 
+            : 'fake_id/' . $form->get('fake_id')->getValue(); ?>";
+    },
+    form    : $("form.row-fluid"),
+    from    : "<?php echo isset($from) ? $this->escape($from) : '' ?>",
+    mediaFakeId         : '<?php echo uniqid() ?>',
+    featureFakeId       : '<?php echo uniqid() ?>',
+    init    : function () {
+    },
+    $       : function(selector) {
+        return this.form.find(selector);
+    },
+    featureImg:         "<?php echo isset($featureThumb) ? $this->escape($featureThumb) : '' ?>",
+    attachMax:          "<?php echo $this->escape($maxMediaSize) ?>",
+    imageExtension:     "<?php echo $this->escape($imageExtension) ?>".split(","),
+    imageMax:           "<?php echo $this->escape($maxImageSize) ?>"
+};
+    // STARTING PROCESSING FEATURE IMAGE
+    var FeatureView = Backbone.View.extend({
+        template        : _.template('<div class="black-bg"><i class="feature icon-remove"></i></div>'
+                        + '<img src="<%=preview_url %>">'),
+        events          : {
+            "click .feature.icon-remove"    : "remove",
+            "click .media.icon-remove"      : "removeUpload",
+            "click #media-search"           : "searchMedia",
+            "click .media-insert a"         : "insertMedia",
+            "click .media-remove.close"     : "removeMedia",
+            "click #media-close"            : "cancel",
+            "click #media-cancel"           : "cancel",
+            "click #media-process"          : "processImage",
+            "click .prev-page"              : "searchMedia",
+            "click .next-page"              : "searchMedia"
+        },
+        initialize      : function() {
+            if (page.featureImg) {
+                this.render({
+                    preview_url: page.featureImg
+                });
+            }
+            this.$el   = $("#jsUpload");
+            this.input = $('input[name="upload"]');
+            this.fileupload();
+        },
+        // Fetching image by upload
+        fileupload      : function() {
+            var self = this;
+            var url  = '<?php echo $this->url('admin', array(
+                'controller' => 'media',
+                'action'     => 'upload',
+                'type'       => 'image',
+                'fake_id'    => '',
+            )); ?>' + page.mediaFakeId;
+            this.input.fileupload({
+                formData    : function() {
+                    return [];
+                },
+                url         : url,
+                done        : function(e, data) {
+                    var d = $.parseJSON(data.result);
+                    if (d.status == 1) {
+                        self.renderUpload(d.data);
+                        // Clear hidden input value and select image of media section
+                        self.setMediaData('fake_id/' + page.mediaFakeId, 'upload');
+                        $('#media-select-result').html('');
+                    } else {
+                        alert(d.message);
+                    }
+                }
+            }).bind('fileuploadsend', function(e, data) {
+                data.url = '<?php echo $this->url('admin', array(
+                    'controller' => 'media',
+                    'action'     => 'upload',
+                    'type'       => 'image',
+                    'fake_id'    => '',
+                )); ?>' + page.mediaFakeId;
+            });  
+        },
+        removeUpload    : function(clearData) {
+            // Setting initial value of parameter
+            if (clearData != false) {
+                clearData = true;
+            }
+
+            var self = this;
+            $.getJSON('<?php echo $this->url(
+                'admin',
+                array(
+                    'controller' => 'media',
+                    'action'     => 'remove',
+                    'fake_id'    => '',
+                )
+            ); ?>'+ page.mediaFakeId).done(function() {
+                $("#media-image").html('');
+                if (clearData == true) {
+                    self.clearMediaData();
+                }
+            });
+        },
+        renderUpload    : function(obj) {
+            obj.preview_url = obj.preview_url + '?' + new Date().getTime();
+            $('#media-image').html(_.template($('#media-uploaded-image').html(), obj));
+        },
+        saveUploadToMedia : function(id) {
+            var url = '<?php echo $this->url('admin', array(
+                'controller' => 'media',
+                'action'     => 'save',
+                'source'     => 'feature',
+            )) ?>/' + id;
+            var self = this;
+            $.ajax({
+                cache:    false,
+                async:    false,
+                dataType: 'json',
+                type:     'get',
+                url:      url,
+                success:  function(result) {
+                    if (result.status) {
+                        $("#media-image").html(page.mediaDefaultTemplate);
+                        self.setMediaData('media_id/' + result.data.id, 'media');
+                        page.mediaFakeId = result.data.newid;
+                    } else {
+                        alert(result.data.message);
+                    }
+                },
+                error:    function() {
+                    alert('Error ocurred when request saving image!');
+                }
+            })
+        },
+        // Processing feature image
+        saveFeature    : function() {
+            var self    = this;
+            var mediaId = $('input[name="image-id"]').val();
+            $.get('<?php echo $this->url(
+                'admin',
+                array(
+                    'controller' => 'article',
+                    'action'     => 'save-image',
+                )
+            ); ?>' + 'id/' + page.id + '/fake_id/' + page.featureFakeId + '/' + mediaId, function(result) {
+                result = $.parseJSON(result);
+                if (result.status) {
+                    self.render({preview_url: result.data.preview_url});
+                    // Remove all generated data
+                    self.removeMedia();
+                    $("#media-image").html(page.mediaDefaultTemplate);
+                } else {
+                    alert(result.message);
+                }
+            });
+        },
+        remove          : function() {
+            var parameter = '<?php echo $form->get('id')->getValue()  
+                            ? 'id-' . $form->get('id')->getValue()
+                            : null ?>';
+            if (!parameter) {
+                parameter = 'fake_id-' + page.featureFakeId;
+            }
+            $.getJSON('<?php echo $this->url(
+                '',
+                array(
+                    'controller' => 'draft',
+                    'action'     => 'remove-image'
+                )
+            ); ?>' + parameter).done(function() {
+                $('#jsUpload').find(".upload-image-wrap").html('');
+            });
+        },
+        render          : function(obj) {
+            obj.preview_url = obj.preview_url + '?' + new Date().getTime();
+            $('#jsUpload').find(".upload-image-wrap").html(this.template(obj));
+        },
+        // Fetching image from media
+        searchMedia     : function(e) {
+            var el   = $(e.target);
+            var from = el.data('from');
+            var url  = '';
+            var self = this;
+            if ('search' == from) {
+                var title = self.$('input[name="media-title"]').val();
+                url = '<?php echo $this->url(
+                    'admin',
+                    array(
+                        'controller' => 'media',
+                        'action'     => 'search',
+                        'type'       => 'image',
+                        'title'      => '',
+                    )
+                ); ?>' + title;
+            } else {
+                url = el.attr('data-url');
+            }
+            if (url.length) {
+                $.get(url, function(result) {
+                    $('#media-lists').find('tbody').html('');
+                    var result = $.parseJSON(result);
+                    var lists = result.data;
+                    for (i in lists) {
+                        $('#media-lists')
+                        .find('tbody')
+                        .append(_.template($('#media-searched-item').html(), lists[i]));
+                    }
+                    if (result.prev_url.length || result.next_url.length) {
+                        self.$('.media-page').removeClass('hide');
+                        self.$('.prev-page').removeClass('disabled');
+                        self.$('.next-page').removeClass('disabled');
+                        if (0 == result.prev_url.length) {
+                            self.$('.prev-page').addClass('disabled');
+                        }
+                        if (0 == result.next_url.length) {
+                            self.$('.next-page').addClass('disabled');
+                        }
+                        self.$('.prev-page').attr('data-url', result.prev_url);
+                        self.$('.next-page').attr('data-url', result.next_url);
+                    }
+                });
+            }
+        },
+        insertMedia : function(e) {
+            var id    = $(e.target).attr('data-id');
+            var url   = $(e.target).attr('data-url');
+            var title = $(e.target).attr('data-title');
+            var content = _.template($('#media-selected-item').html(), {
+                url     : url,
+                title   : title
+            });
+            // Clearing data from upload
+            this.removeUpload(false);
+
+            // Setting data
+            $('#media-select-result').html(content);
+            this.setMediaData('media_id/' + id, 'media');
+        },
+        removeMedia : function() {
+            $('#media-select-result').html('');
+            this.clearMediaData();
+        },
+        clearMediaData : function() {
+            $('input[name="image-id"]').val('');
+            $('input[name="image-source"]').val('');
+        },
+        setMediaData : function(value, source) {
+            $('input[name="image-id"]').val(value);
+            $('input[name="image-source"]').val(source);
+        },
+        // Processing data from uploading and media
+        cancel : function() {
+            var source = $('input[name="image-source"]').val();
+
+            if ('upload' == source) {
+                this.removeUpload();
+            } else if ('media' == source) {
+                this.removeMedia();
+            }
+        },
+        processImage : function() {
+            var self   = this;
+            var source = $('input[name="image-source"]').val();
+            var id     = $('input[name="image-id"]').val();
+
+            if (source.length && id.length) {
+                // Saving uploaded image into media section
+                if ('upload' == source) {
+                    self.saveUploadToMedia(id);
+                }
+
+                // Creating temporary image for feature
+                self.saveFeature();
+            }
+        }
+    });
+page.init();
+new FeatureView;
+})(jQuery)
+</script>
