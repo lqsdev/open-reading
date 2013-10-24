@@ -1,23 +1,44 @@
-<?php
-foreach($articles as $article) {
-?>
-<div>
-    <?php
-    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit', 'id' => $article['id'])));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, $article['introduction'], $article['title']);
-    echo $link;
-    ?> ?>
+<div class="page-header">
+    <h2>Book Articles</h2>
 </div>
-
-<?php
-}
-?>
-
+<left>
 <div>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'edit')));
+    $url = $this->url('',array('controller' => 'article', 'action' => 'edit', 'bid' => $bid, 'cdid' => $cdid));
     $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add New Article'), __('Add New Article'));
     echo $link;
     ?>
 </div>
+</left>
+<table class="table-striped table-condensed">
+    <tr>
+        <th class="span6"><?php echo __('Article Title'); ?></th>
+        <th class="span3"><?php echo __('Operation'); ?></th>
+    </tr>
+    <?php
+    foreach ($articles as $article)
+    {
+    ?>
+    <tr>
+        <td>
+            <center><?php echo $article['title']; ?></center>
+        </td>
+        <td>
+            <center>
+                    <?php
+                    $url = $this->url('', array('controller' => 'article',
+                        'action' => 'edit',
+                        'bid' => $bid,
+                        'cdid' => $cdid,
+                        'id' => $article['article_id']));
+                    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Article'), '<i class="icon-edit"></i>');
+                    echo $link;
+                    ?>
+            </center>
+        </td>
+    </tr>
+    <?php
+    }
+    ?>
+</table>
 

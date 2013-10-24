@@ -1,19 +1,30 @@
 <div class="page-header">
-    <h2>书籍列表</h2>
+    <h2>Book List</h2>
 </div>
-
-<?php
-foreach ($books as $book)
-{
-?>
-<div>
-    <?php echo $book['title']; ?>
+<table class="table-striped table-condensed">
+    <tr>
+        <th class="span6"><?php echo __('Book Title'); ?></th>
+        <th class="span3"><?php echo __('Operation'); ?></th>
+    </tr>
     <?php
-    $url = $this->url('', array_merge(array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $book['id'], 'cid' => $book['catalogue_id'])));
-    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
-    echo $link;
+    foreach ($books as $book)
+    {
     ?>
-</div>
-<?php
-}
-?>
+    <tr>
+        <td>
+            <center><?php echo $book['title']; ?></center>
+        </td>
+        <td>
+            <center>
+            <?php
+            $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $book['id']));
+            $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), '<i class="icon-th-list"></i>');
+            echo $link;
+            ?>
+            </center>
+        </td>
+    </tr>
+    <?php
+    }
+    ?>
+</table>
