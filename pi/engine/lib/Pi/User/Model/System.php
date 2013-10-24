@@ -47,7 +47,7 @@ class System extends AbstractModel
                 $data = array();
             }
         } else {
-            $data = array();
+            $data = array('id' => 0);
         }
         $this->assign($data);
 
@@ -59,15 +59,11 @@ class System extends AbstractModel
      */
     public function loadRole()
     {
-        if ($uid = $this->get('id')) {
-            $row = Pi::model('user_role')->select(array(
-                'uid'       => $uid,
-                'section'   => Pi::engine()->application()->getSection(),
-            ))->current();
-            $this->role = $row ? $row['role'] : 'guest';
-        } else {
-            $this->role = 'guest';
-        }
+        $this->role = Pi::service('user')->getRole(
+            $this->get('id'),
+            '',
+            true
+        );
 
         return $this->role;
     }
@@ -101,8 +97,6 @@ class System extends AbstractModel
      */
     public function hasRole($role)
     {
-        $roles = Pi::registry('role')->read($this->role());
-
-        return in_array($role, $roles) ? true : false;
+        return in_array($role, $this->role()) ? true : false;
     }
 }

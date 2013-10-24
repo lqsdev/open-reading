@@ -371,11 +371,22 @@ class RoleController extends ActionController
                 if ('remove' == $op && $count) {
                     $model->delete($data);
                     $message = __('User removed.');
+                    $data = array('uid' => $uid);
                 } elseif ('add' == $op && !$count) {
                     $row = $model->createRow($data);
                     $row->save();
                     $message = __('User added.');
+                    $data = array(
+                        'uid'   => $uid,
+                        'name'  => Pi::service('user')->get($uid, 'name')
+                    );
                 }
+
+                return array(
+                    'status'    => 1,
+                    'message'   => $message,
+                    'data'      => $data,
+                );
             }
         }
 
@@ -390,10 +401,10 @@ class RoleController extends ActionController
         foreach ($rowset as $row) {
             $uids[] = (int) $row['uid'];
         }
-        $users = Pi::service('user')->get($uids, array('name'));
+        $users = Pi::service('user')->get($uids, array('uid', 'name'));
         $avatars = Pi::service('avatar')->getList($uids, 'small');
         array_walk($users, function (&$user, $uid) use ($avatars) {
-            $user['avatar'] = $avatars[$uid];
+            //$user['avatar'] = $avatars[$uid];
             $user['url'] = Pi::service('user')->getUrl('profile', $uid);
         });
         $count = count($uids);
@@ -401,14 +412,34 @@ class RoleController extends ActionController
             $count = $model->count(array('role' => $role));
         }
 
+        /*
         $paginator = Paginator::factory($count, array(
             'page'          => $page,
             'url_options'   => array(
                 'params'    => array('role' => $role),
             ),
         ));
+        */
         $roles = Pi::registry('role')->read();
         $title = sprintf(__('Users of role %s'), $roles[$role]['title']);
+        if ($count > $limit) {
+            $paginator = array(
+                'page'    => $page,
+                'count'   => $count,
+                'limit'   => $limit
+            );
+        } else {
+            $paginator = array();
+        }
+
+        $data = array(
+            'title'     => $title,
+            'users'     => array_values($users),
+            'paginator' => $paginator,
+        );
+
+        return $data;
+        /*
         $this->view()->assign(array(
             'title'     => $title,
             'role'      => $role,
@@ -419,5 +450,44 @@ class RoleController extends ActionController
         ));
 
         $this->view()->setTemplate('role-user');
+        */
+    }
+
+    public function ____userAction()
+    {
+        $role = $this->params('name', 'member');
+
+        $model = Pi::model('user_role');
+
+        $page   = _get('page', 'int') ?: 1;
+        $limit  = 3;
+        $offset = ($page - 1) * $limit;
+
+        $select = $model->select();
+        $select->where(array('role' => $role))->limit($limit)->offset($offset);
+        $rowset = $model->selectWith($select);
+        $uids = array();
+        foreach ($rowset as $row) {
+            $uids[] = (int) $row['uid'];
+        }
+        $users = Pi::service('user')->get($uids, array('name'));
+        $avatars = Pi::service('avatar')->getList($uids, 'small');
+        array_walk($users, function (&$user, $uid) use ($avatars) {
+            //$user['avatar'] = $avatars[$uid];
+            $user['url'] = Pi::service('user')->getUrl('profile', $uid);
+        });
+        $count = count($uids);
+        if ($count >= $limit) {
+            $count = $model->count(array('role' => $role));
+        }
+        $paginator = array(
+            'page'    => $page,
+            'count'   => $count,
+            'limit'   => $limit
+        );
+        return array(
+            'users'      => array_values($users),
+            'paginator' => $paginator,
+        );
     }
 }

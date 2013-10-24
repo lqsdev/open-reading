@@ -26,24 +26,22 @@ class Auto extends AbstractAvatar
         $src = '';
         if ($uid) {
             if ($uid == $this->user->get('id')) {
+                /*
                 $data = array(
                     'avatar'    => $this->user->get('avatar'),
                     'email'     => $this->user->get('email'),
                 );
+                */
+                $avatar = $this->user->get('avatar');
             } else {
-                $data = Pi::user()->get($uid, array('avatar', 'email'));
+                //$data = Pi::user()->get($uid, array('avatar', 'email'));
+                $avatar = Pi::user()->get($uid, 'avatar');
             }
 
-            if ($data) {
-                $src = $this->buildUrl($data, $size);
+            if ($avatar) {
+                $src = $this->buildUrl($avatar, $size);
             }
         }
-
-        /*
-        if (!$src) {
-            $src = $this->resource->getAdapter('local')->getSource($uid, $size);
-        }
-        */
 
         return $src;
     }
@@ -54,7 +52,8 @@ class Auto extends AbstractAvatar
     public function getSourceList($uids, $size = '')
     {
         $result = array();
-        $list = Pi::user()->get($uids, array('avatar', 'email'));
+        //$list = Pi::user()->get($uids, array('avatar', 'email'));
+        $list = Pi::user()->get($uids, 'avatar');
         foreach ($list as $uid => $data) {
             if ($data) {
                 $url = $this->buildUrl($data, $size);
@@ -78,36 +77,44 @@ class Auto extends AbstractAvatar
     /**
      * Build avatar URL
      *
-     * @param array  $data
+     * @param string  $data
      * @param string $size
      *
      * @return string
      */
-    protected function buildUrl(array $data, $size)
+    protected function buildUrl($data, $size)
     {
         $src = '';
-        $allowedAdapters = (array) Pi::avatar()->getOption('adapter_allowed');
+        if (!empty($this->options['adapter_allowed'])) {
+            $allowedAdapters = (array) $this->options['adapter_allowed'];
+        } else {
+            $allowedAdapters = (array) Pi::avatar()->getOption('adapter');
+        }
         $list = array_fill_keys($allowedAdapters, '');
 
+        /*
         if (!$data['avatar']) {
-            if (isset($list['gravatar'])) {
+            if (isset($list['gravatar']) && isset($data['email'])) {
                 $list['gravatar'] = $data['email'];
             }
-        } elseif (false !== strpos($data['avatar'], '@')) {
-            if (isset($list['gravatar'])) {
-                $list['gravatar'] = $data['avatar'];
+        } else {
+            $type = Pi::service('avatar')->getType($data['avatar']);
+            if (isset($list[$type])) {
+                $list[$type] = $data['avatar'];
             }
-        } elseif (preg_match('/[a-z0-9\-]/i', $data['avatar'])) {
-            if (isset($list['upload'])) {
-                $list['upload'] = $data['avatar'];
-            }
-        } elseif (isset($list['select'])) {
-            $list['select'] = $data['avatar'];
         }
+        */
 
+        if ($data) {
+            $type = Pi::service('avatar')->getType($data);
+            if (isset($list[$type])) {
+                $list[$type] = $data;
+            }
+        }
         foreach ($list as $adapter => $avatar) {
             if ($avatar) {
                 $src = Pi::service('avatar')->getAdapter($adapter)
+                    ->setForce(false)
                     ->build($avatar, $size);
                 break;
             }

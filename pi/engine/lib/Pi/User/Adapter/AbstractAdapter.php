@@ -75,10 +75,15 @@ abstract class AbstractAdapter implements BindInterface
      */
     protected $model;
 
+    /** @var int Root user id */
+    protected $rootUid = 1;
+
     /**
      * Constructor
      *
      * @param array $options
+     *
+     * @return \Pi\User\Adapter\AbstractAdapter
      */
     public function __construct($options = array())
     {
@@ -135,7 +140,7 @@ abstract class AbstractAdapter implements BindInterface
      */
     protected function verifyUid($uid)
     {
-        $uid = $uid ? intval($uid) : $this->__get($uid);
+        $uid = $uid ? intval($uid) : (int) $this->__get('id');
 
         return $uid;
     }
@@ -162,6 +167,25 @@ abstract class AbstractAdapter implements BindInterface
      */
 
     /**
+     * Check if user is root user
+     *
+     * @param null|int $uid
+     *
+     * @return bool
+     */
+    public function isRoot($uid = null)
+    {
+        if ($this->rootUid) {
+            $uid = $this->verifyUid($uid);
+            $result = $this->rootUid === $uid ? true : false;
+        } else {
+            $result = false;
+        }
+
+        return $result;
+    }
+
+    /**
      * Get user data model
      *
      * @param int|string|null   $uid    User id, identity
@@ -169,7 +193,7 @@ abstract class AbstractAdapter implements BindInterface
      * @return UserModel
      * @api
      */
-    abstract public function getUser($uid, $field = 'id');
+    abstract public function getUser($uid = null, $field = 'id');
 
     /**
      * Get user IDs subject to conditions
@@ -374,12 +398,13 @@ abstract class AbstractAdapter implements BindInterface
      * - logout: URI to user logout page
      * - register (signup): URI to user register/signup page
      *
-     * @param string            $type URL type
-     * @param int|string|null   $var User id for profile or redirect for login
+     * @param string    $type URL type
+     * @param mixed     $options User id for profile or redirect for login
+     *
      * @return string
      * @api
      */
-    abstract public function getUrl($type, $var = null);
+    abstract public function getUrl($type, $options = null);
 
     /**
      * Authenticate user
@@ -412,4 +437,14 @@ abstract class AbstractAdapter implements BindInterface
      */
     abstract public function killUser($uid);
     /**#@-*/
+
+    /**
+     * Get a user model
+     *
+     * @param int|string|array  $uid
+     * @param string            $field
+     *
+     * @return UserModel
+     */
+    abstract public function getUserModel($uid, $field = 'id');
 }

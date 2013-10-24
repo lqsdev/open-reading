@@ -39,31 +39,53 @@ class PrivacyController extends ActionController
             );
         }
 
-        // Get user privacy setting
+        $privacy = Pi::api('user', 'privacy')->getUserPrivacy($uid, 'list');
 
-        $privacy = $this->getPrivacySetting($uid);
-
-        return $privacy;
+        $limits = array(
+            0   => __('Public'),
+            1   => __('Member'),
+            2   => __('Follower'),
+            4   => __('Following'),
+            255 => __('Owner'),
+        );
+        $this->view()->assign(array(
+            'privacy' => $privacy,
+            'limits'  => $limits
+        ));
     }
 
+    /**
+     * Set user privacy
+     *
+     * @return array
+     */
     public function setPrivacyAction()
     {
-        $uid   = _post('uid');
+        $uid   = (int) Pi::user()->getIdentity();
         $field = _post('field');
-        $value = _post('value');
+        $value = (int) _post('value');
 
         $result = array(
-            'status' => 0,
+            'status'  => 0,
             'message' => __('Set privacy failed'),
         );
 
+        // Check post data
         if (!$uid) {
            return $result;
         }
-        if (!in_array($value, array('0', '1', '2', '4', '255'))) {
+        if (!in_array($value, array(0, 1, 2, 4, 255))) {
             return $result;
         }
-
+        $row = $this->getModel('privacy')->find($field, 'field');
+        // Field is not exist
+        if (!$row) {
+            return $result;
+        }
+        // Field is not allow setting
+        if (!$row->is_forced) {
+            return $result;
+        }
         $row = $this->getModel('privacy_user')->find($uid, 'uid');
         if (!$row) {
             return $result;
@@ -81,63 +103,10 @@ class PrivacyController extends ActionController
                     'is_forced' => 1,
                 )
             );
-            $result['status'] = 1;
+            $result['status']  = 1;
             $result['message'] = __('Set privacy successfully');
         } catch (\Exception $e) {
             return $result;
-        }
-
-        return $result;
-
-    }
-
-    protected function getPrivacySetting($uid)
-    {
-        if (!$uid) {
-            return;
-        }
-
-        $result = array();
-        $userPrivacyModel = $this->getModel('privacy_user');
-        $privacyModel     = $this->getModel('privacy');
-
-        // Check user setting
-        $select = $userPrivacyModel->select()->where(array('uid' => $uid));
-        $rowset = $userPrivacyModel->selectWith($select);
-
-        foreach ($rowset as $row) {
-            $result[] = $row->toArray();
-        }
-
-        if (!empty($result)) {
-            return $result;
-        }
-
-        // Get default setting
-        $select = $privacyModel->select()->where(array());
-        $rowset = $privacyModel->selectWith($select);
-        foreach ($rowset as $row) {
-            $data = array(
-                'uid'       => $uid,
-                'field'     => $row['field'],
-                'value'     => $row['value'],
-                'is_forced' => $row['is_forced'],
-            );
-
-            $userPrivacyRow = $userPrivacyModel->createRow($data);
-
-            try {
-                $userPrivacyRow->save();
-                $result[] = array(
-                    'id'        => $userPrivacyRow['id'],
-                    'uid'       => $userPrivacyRow['uid'],
-                    'field'     => $userPrivacyRow['field'],
-                    'value'     => $userPrivacyRow['value'],
-                    'is_forced' => $userPrivacyRow['is_forced'],
-                );
-            } catch (\Exception $e) {
-                return array();
-            }
         }
 
         return $result;

@@ -221,16 +221,16 @@ class View extends AbstractPlugin
      */
     public function setTemplate($template, $module = '', $section = '')
     {
+        if (!$template) {
+            $template = static::NULL_TEMPLATE;
         // Set module prefix and section folder
-        if ($template) {
+        } elseif (false !== $module) {
             if (false === strpos($template, ':')) {
                 $module = $module ?: $this->getController()->getModule();
                 $section = $section
                     ?: $this->getEvent()->getApplication()->getSection();
                 $template = $module . ':' . $section . '/' . $template;
             }
-        } else {
-            $template = static::NULL_TEMPLATE;
         }
         $this->getViewModel()->setTemplate($template);
 
@@ -360,8 +360,8 @@ class View extends AbstractPlugin
     public function helper($name)
     {
         $render = $this->getController()->getServiceLocator()
-            ->get('ViewManager')->getRenderer();
-        $helper = $render->plugin($name);
+            ->get('ViewManager')->getHelperManager();
+        $helper = $render->get($name);
 
         return $helper;
     }

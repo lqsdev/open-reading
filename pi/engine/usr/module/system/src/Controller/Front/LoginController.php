@@ -10,8 +10,8 @@
 namespace Module\System\Controller\Front;
 
 use Pi;
+use Pi\Authentication\Result;
 use Pi\Mvc\Controller\ActionController;
-use Pi\Acl\Acl as AclManager;
 use Module\System\Form\LoginForm;
 use Module\System\Form\LoginFilter;
 
@@ -62,6 +62,23 @@ class LoginController extends ActionController
     }
 
     /**
+     * Logout
+     */
+    public function logoutAction()
+    {
+        Pi::service('session')->manager()->destroy();
+        Pi::service('user')->destroy();
+        $redirect = _get('redirect');
+        $redirect = $redirect
+            ? urldecode($redirect) : array('route' => 'home');
+
+        $this->jump(
+            $redirect,
+            __('You logged out successfully. Now go back to homepage.')
+        );
+    }
+
+    /**
      * Render login form
      *
      * @param LoginForm $form
@@ -99,40 +116,13 @@ class LoginController extends ActionController
     }
 
     /**
-     * Logout
-     */
-    public function logoutAction()
-    {
-        Pi::service('session')->manager()->destroy();
-        Pi::service('user')->destroy();
-        $redirect = _get('redirect');
-        $redirect = $redirect
-            ? urldecode($redirect) : array('route' => 'home');
-        $this->jump(
-            $redirect,
-            __('You logged out successfully. Now go back to homepage.')
-        );
-    }
-
-    /**
      * Process login submission
      *
      * @return void
      */
     public function processAction()
     {
-        if (Pi::config('login_disable', 'user')) {
-            $this->jump(array('route' => 'home'),
-                        __('Login is closed. Please try later.'), 5);
-
-            return;
-        }
-
-        if (!$this->request->isPost()) {
-            $this->jump(array('action' => 'index'), __('Invalid request.'));
-
-            return;
-        }
+        $configs = $this->preProcess();
 
         $post = $this->request->getPost();
         $form = $this->getForm();
@@ -145,10 +135,9 @@ class LoginController extends ActionController
             return;
         }
 
-        $configs = Pi::registry('config')->read('', 'user');
-
-        $values = $form->getData();
-        $identity = $values['identity'];
+        //$configs    = Pi::registry('config')->read('', 'user');
+        $values     = $form->getData();
+        $identity   = $values['identity'];
         $credential = $values['credential'];
 
         if (!empty($configs['attempts'])) {
@@ -168,6 +157,7 @@ class LoginController extends ActionController
         }
 
         $result = Pi::service('user')->authenticate($identity, $credential);
+        $result = $this->postProcess($result);
 
         if (!$result->isValid()) {
             if (!empty($configs['attempts'])) {
@@ -188,12 +178,12 @@ class LoginController extends ActionController
             Pi::service('session')->manager()
                 ->rememberme($configs['rememberme'] * 86400);
         }
-        Pi::service('session')->setUser($result->getData('id'));
-        Pi::service('user')->bind($result->getIdentity(), 'identity');
-        Pi::service('user')->setPersist($result->getData());
-        Pi::service('event')->trigger('login', $result->getIdentity());
+        $uid = $result->getData('id');
+        Pi::service('session')->setUser($uid);
+        Pi::service('user')->bind($uid);
+        Pi::service('event')->trigger('login', $uid);
 
-        if (!empty($configs['attempts'])) {
+        if (isset($_SESSION['PI_LOGIN'])) {
             unset($_SESSION['PI_LOGIN']);
         }
 
@@ -202,8 +192,7 @@ class LoginController extends ActionController
         } else {
             $redirect = urldecode($values['redirect']);
         }
-
-        $this->jump($redirect, __('You have logged in successfully.'), 2);
+        $this->jump($redirect, __('You have logged in successfully.'));
     }
 
     /**
@@ -220,5 +209,42 @@ class LoginController extends ActionController
         );
 
         return $form;
+    }
+
+    /**
+     * Pre-process handling
+     *
+     * @return array
+     */
+    protected function preProcess()
+    {
+        if (Pi::config('login_disable', 'user')) {
+            $this->jump(array('route' => 'home'),
+                __('Login is closed. Please try later.'), 5);
+
+            return;
+        }
+
+        if (!$this->request->isPost()) {
+            $this->jump(array('action' => 'index'), __('Invalid request.'));
+
+            return;
+        }
+
+        $configs = Pi::registry('config')->read('', 'user');
+
+        return $configs;
+    }
+
+    /**
+     * Filtering Result after authentication
+     *
+     * @param Result $result
+     *
+     * @return Result
+     */
+    protected function postProcess(Result $result)
+    {
+        return $result;
     }
 }

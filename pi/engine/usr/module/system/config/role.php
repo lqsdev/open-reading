@@ -19,12 +19,14 @@ return array(
         'admin'     => __('Administrator'),
         // Admin area user
         'staff'     => __('Staff'),
+        /*
         // Module/section moderator or administrator
         'moderator' => __('Moderator'),
         // Content editor
         'editor'    => __('Editor'),
         // Module manager for content and moderation
         'manager'   => __('Manager'),
+        */
     ),
 
     // Front section

@@ -33,7 +33,11 @@ class Select extends AbstractAvatar
         } else {
             $avatar = Pi::user()->get($uid, 'avatar');
         }
-        if ($avatar && preg_match('/[a-z0-9\-]/i', $avatar)) {
+        if ($avatar
+            && ($this->force
+                || 'select' == Pi::service('avatar')->getType($avatar)
+            )
+        ) {
             $src = $this->build($avatar, $size);
         }
 
@@ -48,7 +52,11 @@ class Select extends AbstractAvatar
         $result = array();
         $avatars = Pi::user()->get($uids, 'avatar');
         foreach ($avatars as $uid => $avatar) {
-            if ($avatar && preg_match('/[a-z0-9\-]/i', $avatar)) {
+            if ($avatar
+                && ($this->force
+                    || 'select' == Pi::service('avatar')->getType($avatar)
+                )
+            ) {
                 $result[$uid] = $this->build($avatar, $size);
             }
         }
@@ -119,7 +127,7 @@ class Select extends AbstractAvatar
                 continue;
             }
             $directory = $fileinfo->getFilename();
-            if (!preg_match('/[a-z0-9\-]/i', $directory)) {
+            if ('select' != Pi::service('avatar')->getType($directory)) {
                 continue;
             }
             $result[$directory] = $this->build($directory, $size);

@@ -12,8 +12,6 @@ namespace Pi\Mvc\Controller\Plugin;
 use Pi;
 use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 use Zend\Http\Response;
-use Zend\Mvc\MvcEvent;
-use Zend\Mvc\InjectApplicationEventInterface;
 
 /**
  * Jump to a page going through a transition page
@@ -34,7 +32,7 @@ use Zend\Mvc\InjectApplicationEventInterface;
 class Jump extends AbstractPlugin
 {
     /** @var string Namespace for session */
-    protected static $sessionNamespace = 'PI_JUMP';
+    //protected static $sessionNamespace = 'PI_JUMP';
 
     /**
      * Generates a URL based on a route
@@ -48,9 +46,9 @@ class Jump extends AbstractPlugin
      */
     public function __invoke(
         $params,
-        $message = '',
-        $time = 3,
-        $allowExternal = false
+        $message        = '',
+        $time           = 3,
+        $allowExternal  = false
     ) {
         if (is_array($params)) {
             if (!isset($params['route'])) {
@@ -78,11 +76,22 @@ class Jump extends AbstractPlugin
             'message'   => $message,
             'url'       => $url,
         );
-        $_SESSION[static::$sessionNamespace] = $jumpParams;
+        //$_SESSION[static::$sessionNamespace] = $jumpParams;
+        Pi::service('cookie')->set('PI_JUMP', $jumpParams, 30);
+        //vd($jumpParams); exit();
 
         $controller = $this->getController();
         $controller->view()->setTemplate(false);
-        $response = $controller->plugin('redirect')->toRoute('jump');
+        /*
+        $route = 'admin' == Pi::engine()->application()->getSection()
+            ? 'admin' : 'default';
+        */
+        $response = $controller->plugin('redirect')->toRoute(
+            'default',
+            array(
+                'module'        => 'system',
+                'controller'    => 'jump',
+        ));
         if ($response instanceof Response) {
             $response->send();
         }

@@ -20,8 +20,8 @@ use Pi\User\Model\AbstractModel;
  */
 abstract class AbstractAvatar
 {
-    /** @var AvatarResource Avatar resource handler */
-    //protected $resource;
+    /** @var bool Force to skip type check */
+    protected $force = true;
 
     /**
      * Options
@@ -45,6 +45,20 @@ abstract class AbstractAvatar
     }
 
     /**
+     * Set to force this type
+     *
+     * @param bool $flag
+     *
+     * @return $this
+     */
+    public function setForce($flag)
+    {
+        $this->force = (bool) $flag;
+
+        return $this;
+    }
+
+    /**
      * Set options
      *
      * @param array $options
@@ -56,6 +70,16 @@ abstract class AbstractAvatar
         $this->options = $options;
 
         return $this;
+    }
+
+    /**
+     * Get options
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     /**
@@ -125,6 +149,7 @@ abstract class AbstractAvatar
      */
     public function getList($uids, $size = '', $attributes = array())
     {
+        $result = array();
         $srcList = $this->getSourceList($uids, $size);
         if (false === $attributes) {
             return $srcList;

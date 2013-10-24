@@ -37,8 +37,9 @@ class ListController extends ActionController
         $limit  = $this->config('list_limit') ?: 10;
         $offset = ($page - 1) * $limit;
 
+        $where = array('active' => $active);
         $posts = Pi::api('comment')->getList(
-            array('active' => $active),
+            $where,
             $limit,
             $offset
         );
@@ -46,11 +47,12 @@ class ListController extends ActionController
             'operation' => $this->config('display_operation'),
         );
         $posts = Pi::api('comment')->renderList($posts, $renderOptions);
-        $count = Pi::api('comment')->getCount(array('active' => $active));
+        $count = Pi::api('comment')->getCount($where);
 
         //$params = (null === $active) ? array() : array('active' => $active);
         $paginator = Paginator::factory($count, array(
             'page'          => $page,
+            'limit'         => $limit,
             /*
             'url_options'   => array(
                 'params'    => $params,
@@ -81,31 +83,49 @@ class ListController extends ActionController
      */
     public function rootAction()
     {
-        $root   = _get('root', 'int') ?: 1;
-        $page   = _get('page', 'int') ?: 1;
-        $limit  = $this->config('list_limit') ?: 10;
-        $offset = ($page - 1) * $limit;
-        $posts  = Pi::api('comment')->getList($root, $limit, $offset);
-        $renderOptions = array(
-            'operation' => $this->config('display_operation'),
-        );
-        $posts = Pi::api('comment')->renderList($posts, $renderOptions);
-        $count = Pi::api('comment')->getCount($root);
+        $rootId     = _get('root', 'int') ?: 1;
+        $root       = Pi::model('root', 'comment')->find($rootId);
+        $isActive   = null;
+        $count      = null;
+        $target     = null;
+        $posts      = null;
+        $paginator  = null;
 
-        $target = Pi::api('comment')->getTarget($root);
-
-        $paginator = Paginator::factory($count, array(
-            'page'  => $page,
-            'url_options'           => array(
-                'params'        => array(
-                    'root'      => $root,
+        if ($root) {
+            $isActive = $root['active'];
+            $page   = _get('page', 'int') ?: 1;
+            $limit  = $this->config('list_limit') ?: 10;
+            $offset = ($page - 1) * $limit;
+            $posts  = Pi::api('comment')->getList($rootId, $limit, $offset);
+            $renderOptions = array(
+                'operation' => $this->config('display_operation'),
+                'user'      => array(
+                    'avatar'    => 'medium',
                 ),
-            ),
-        ));
-        $title = sprintf(__('Comment posts of %s'), $target['title']);
+            );
+            $posts = Pi::api('comment')->renderList($posts, $renderOptions);
+            $count = Pi::api('comment')->getCount($rootId);
+
+            $target = Pi::api('comment')->getTarget($rootId);
+
+            $paginator = Paginator::factory($count, array(
+                'page'          => $page,
+                'limit'         => $limit,
+                'url_options'   => array(
+                    'params'        => array(
+                        'root'      => $root->id,
+                    ),
+                ),
+            ));
+        } else {
+
+        }
+
+        $title = __('Comment posts of article');
         $this->view()->assign('comment', array(
             'title'     => $title,
-            'root'      => $root,
+            'root'      => $rootId,
+            'active'    => $isActive,
             'target'    => $target,
             'count'     => $count,
             'posts'     => $posts,
@@ -164,6 +184,7 @@ class ListController extends ActionController
         }
         $paginator = Paginator::factory($count, array(
             'page'          => $page,
+            'limit'         => $limit,
             'url_options'   => array(
                 'params'    => $params,
             ),
@@ -209,10 +230,7 @@ class ListController extends ActionController
             $user           = Pi::service('user')->get($uid, array('name'));
             $user['avatar'] = Pi::service('avatar')->get($uid);
             $user['url']    = Pi::service('user')->getUrl('profile', $uid);
-            $title          = sprintf(
-                __('Comment posts of user %s'),
-                $user['name']
-            );
+            $title          = __('Comment posts of user');
             $template       = 'comment-user';
         }
         $this->view()->assign('comment', array(
@@ -270,23 +288,13 @@ class ListController extends ActionController
             $params['category'] = $category;
         }
         $paginator = Paginator::factory($count, array(
-            'page'  => $page,
-            'url_options'           => array(
+            'page'          => $page,
+            'limit'         => $limit,
+            'url_options'   => array(
                 'params'        => $params,
             ),
         ));
-        if ($categoryData) {
-            $title = sprintf(
-                __('Comment posts of Module %s with Category %s'),
-                $moduleData['title'],
-                $categoryData['title']
-            );
-        } else {
-            $title = sprintf(
-                __('Comment posts of Module %s'),
-                $moduleData['title']
-            );
-        }
+        $title = __('Comment posts of module');
         $this->view()->assign('comment', array(
             'title'     => $title,
             'count'     => $count,
@@ -322,7 +330,7 @@ class ListController extends ActionController
             if (null !== $active) {
                 $active = (int) $active;
             }
-            $where = array('uid' => $uid, 'active' => $active);
+            $where = array('author' => $uid, 'active' => $active);
         } else {
             $active = 1;
             $where  = array('active' => $active);
@@ -388,6 +396,7 @@ class ListController extends ActionController
         }
         $paginator = Paginator::factory($count, array(
             'page'          => $page,
+            'limit'         => $limit,
             'url_options'   => array(
                 'params'    => $params,
             ),
@@ -404,45 +413,149 @@ class ListController extends ActionController
             'paginator' => $paginator,
         ));
 
-        $navTabs = array(
-            array(
-                'active'    => !$my,
-                'label'     => __('Articles with comments'),
-                'href'      => $this->url('', array(
-                    'action'    => 'article',
-                ))
-            ),
-            array(
-                'active'    => $my && null === $active,
-                'label'     => __('My articles'),
-                'href'      => $this->url('', array(
-                    'action'    => 'article',
-                    'my'        => 1,
-                ))
-            ),
-            array(
-                'active'    => $my && $active,
-                'label'     => __('My articles with active comments'),
-                'href'      => $this->url('', array(
-                    'action'    => 'article',
-                    'my'        => 1,
-                    'active'    => 1,
-                ))
-            ),
-            /*
-            array(
-                'active'    => 1 == $active,
-                'label'     => __('Articles with active comments'),
-                'href'      => $this->url('', array(
-                    'action'    => 'article',
-                    'active'    => 1,
-                ))
-            ),
-            */
-        );
-        $this->view()->assign(array(
-            'tabs'      => $navTabs,
-        ));
+        if ($my) {
+            $navTabs = array(
+                array(
+                    'active'    => $my && null === $active,
+                    'label'     => __('My articles'),
+                    'href'      => $this->url('', array(
+                        'action'    => 'article',
+                        'my'        => 1,
+                    ))
+                ),
+                array(
+                    'active'    => $my && $active,
+                    'label'     => __('My articles with active comments'),
+                    'href'      => $this->url('', array(
+                        'action'    => 'article',
+                        'my'        => 1,
+                        'active'    => 1,
+                    ))
+                ),
+            );
+            $this->view()->assign(array(
+                'tabs'      => $navTabs,
+            ));
+        }
+
         $this->view()->setTemplate('comment-article');
+    }
+
+    /**
+     * All posts commented on me
+     */
+    public function receivedAction()
+    {
+        /*
+        $active = _get('active');
+        if (null !== $active) {
+            $active = 1;
+        }
+        */
+        $my     = _get('my', 'int');
+        $uid    = _get('uid', 'int');
+        $active = _get('active');
+        $page   = _get('page', 'int') ?: 1;
+        $limit  = $this->config('list_limit') ?: 10;
+        $offset = ($page - 1) * $limit;
+
+        if (!$my && $uid) {
+            $active = 1;
+
+        } else  {
+            $my     = 1;
+            $uid    = Pi::user()->getIdentity();
+            if (!$uid) {
+                $redirect = $this->getRequest()->getRequestUri();
+                $url = Pi::service('user')->getUrl('login', $redirect);
+                $this->jump($url, __('Please login.'));
+            }
+            if (null !== $active) {
+                $active = (int) $active;
+            }
+        }
+        $where  = array(
+            'author' => $uid,
+            'active' => $active
+        );
+
+        $posts = Pi::api('comment')->getList(
+            $where,
+            $limit,
+            $offset
+        );
+        $posts = Pi::api('comment')->renderList($posts);
+        $count = Pi::api('comment')->getCount($where);
+
+        if ($my) {
+            $params = array(
+                'my'        => 1,
+                'active'    => $active,
+            );
+        } else {
+            $params = array(
+                'uid'       => $uid,
+            );
+        }
+        $paginator = Paginator::factory($count, array(
+            'page'          => $page,
+            'limit'         => $limit,
+            'url_options'   => array(
+                'params'    => $params,
+            ),
+        ));
+        if ($my) {
+            $title          = __('Received comments');
+            $user           = null;
+            $template       = 'comment-my-received';
+
+            $navTabs = array(
+                array(
+                    'active'    => null === $active,
+                    'label'     => __('All Posts'),
+                    'href'      => $this->url('', array(
+                        'action'    => 'received',
+                        'my'        => 1,
+                    ))
+                ),
+                array(
+                    'active'    => 1 == $active,
+                    'label'     => __('Active Posts'),
+                    'href'      => $this->url('', array(
+                        'action'    => 'received',
+                        'my'        => 1,
+                        'active'    => 1,
+                    ))
+                ),
+                array(
+                    'active'    => 0 === $active,
+                    'label'     => __('Inactive Posts'),
+                    'href'      => $this->url('', array(
+                        'action'    => 'received',
+                        'my'        => 1,
+                        'active'    => 0,
+                    ))
+                ),
+            );
+            $this->view()->assign(array(
+                'tabs'      => $navTabs,
+            ));
+
+        } else {
+            $user           = Pi::service('user')->get($uid, array('name'));
+            $user['avatar'] = Pi::service('avatar')->get($uid);
+            $user['url']    = Pi::service('user')->getUrl('profile', $uid);
+            $title          = __('Comment posts on user');
+            $template       = 'comment-user-received';
+        }
+        $this->view()->assign('comment', array(
+            'title'     => $title,
+            'count'     => $count,
+            'posts'     => $posts,
+            'paginator' => $paginator,
+            'user'      => $user,
+        ));
+
+        $this->view()->setTemplate($template);
     }
 }

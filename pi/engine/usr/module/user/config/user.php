@@ -32,16 +32,6 @@ return array(
                     ),
                     array(
                         'name'      => 'Module\User\Validator\Username',
-                        /*
-                        'options'   => array(
-                            'encoding'          => 'UTF-8',
-                            'min'               => $config['uname_min'],
-                            'max'               => $config['uname_max'],
-                            'format'            => $config['uname_format'],
-                            'backlist'          => $config['uname_backlist'],
-                            'checkDuplication'  => true,
-                        ),
-                        */
                     ),
                 ),
             ),
@@ -58,13 +48,6 @@ return array(
                 'validators'    => array(
                     array(
                         'name'      => 'Module\User\Validator\Password',
-                        /*
-                        'options'   => array(
-                            'encoding'  => 'UTF-8',
-                            'min'       => $config['password_min'],
-                            'max'       => $config['password_max'],
-                        ),
-                        */
                     ),
                 ),
             ),
@@ -87,12 +70,6 @@ return array(
                     ),
                     array(
                         'name'      => 'Module\User\Validator\UserEmail',
-                        /*
-                        'options'   => array(
-                            'backlist'          => $config['email_backlist'],
-                            'checkDuplication'  => true,
-                        ),
-                        */
                     ),
                 ),
             ),
@@ -107,15 +84,6 @@ return array(
                 'validators'    => array(
                     array(
                         'name'      => 'Module\User\Validator\Name',
-                        /*
-                        'options'   => array(
-                            'encoding'          => 'UTF-8',
-                            'min'               => $config['name_min'],
-                            'max'               => $config['name_max'],
-                            'backlist'          => $config['name_backlist'],
-                            'checkDuplication'  => true,
-                        ),
-                        */
                     ),
                 ),
             ),
@@ -135,6 +103,17 @@ return array(
             'title' => __('Birth date'),
             'edit'  => array(
                 'element'       => 'date_select',
+                'options'       => array(
+                    'year_attributes' => array(
+                        'class' => 'input-small',
+                    ),
+                    'month_attributes' => array(
+                        'class' => 'input-small',
+                    ),
+                    'day_attributes' => array(
+                        'class' => 'input-small',
+                    ),
+                ),
             ),
         ),
         // Account: avatar
@@ -286,6 +265,10 @@ return array(
                     'title' => __('Room'),
                 ),
             ),
+
+            'is_edit'       => true,
+            'is_display'    => true,
+            'is_search'     => false,
         ),
 
         // Compound: Education experiences
@@ -313,6 +296,9 @@ return array(
                     'title' => __('End time'),
                 ),
             ),
+            'is_edit'       => true,
+            'is_display'    => true,
+            'is_search'     => false,
         ),
 
         // Compound: Profession experiences
@@ -341,6 +327,9 @@ return array(
                     'title' => __('End time'),
                 ),
             ),
+            'is_edit'       => true,
+            'is_display'    => true,
+            'is_search'     => false,
         ),
 
     ),

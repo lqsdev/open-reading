@@ -64,6 +64,7 @@ class Api extends AbstractApi
         'module',
         'category',
         'item',
+        'author',
         'active'
     );
 
@@ -120,7 +121,7 @@ class Api extends AbstractApi
             }
         }
 
-        return $data;
+        return $result;
     }
 
     /**
@@ -259,15 +260,28 @@ class Api extends AbstractApi
         $categoryList = Pi::registry('category', 'comment')->read($module);
         $limit = Pi::config()->module('leading_limit', 'comment') ?: 5;
 
-        if (!isset($categoryList[$controller][$action])) {
+        $lookupList = array();
+        if (isset($categoryList['route'][$controller][$action])) {
+            $lookupList = $categoryList['route'][$controller][$action];
+        } elseif (isset($categoryList['locator'])) {
+            $lookupList = $categoryList['locator'];
+        } else {
             return false;
         }
+
         //vd($routeMatch);
         // Look up root against route data
         $lookup = function ($data) use ($routeMatch) {
+            // Look up via locator callback
+            if (!empty($data['locator'])) {
+                $locator    = new $data['locator']($routeMatch->getParam('module'));
+                $item       = $locator->locate($routeMatch);
+
+                return $item;
+            }
+
+            // Look up via route
             $item = $routeMatch->getParam($data['identifier']);
-            //vd($data['identifier']);
-            //vd($item);
             if (null === $item) {
                 return false;
             }
@@ -283,7 +297,8 @@ class Api extends AbstractApi
         };
 
         $root = array();
-        foreach ($categoryList[$controller][$action] as $key => $data) {
+        // Look up against controller-action
+        foreach ($lookupList as $key => $data) {
             //d($data);
             $item = $lookup($data);
             if ($item) {
@@ -317,29 +332,21 @@ class Api extends AbstractApi
             //vd($result['count']);
             if ($result['count']) {
                 $posts = $this->getList($rootData['id'], $limit);
-                $posts = $this->renderList($posts);
+                $renderOptions = array(
+                    'target'    => false,
+                    'operation' => Pi::service('config')
+                        ->module('display_operation'),
+                    'user'      => array(
+                        'avatar'    => 'medium',
+                    ),
+                );
+                $posts = $this->renderList($posts, $renderOptions);
                 $result['posts'] = $posts;
                 $result['url_list'] = $this->getUrl(
                     'root',
                     array('root'  => $rootData['id'])
                 );
             }
-        }
-        $users = array();
-        foreach ($result['posts'] as $post) {
-            $users[$post['uid']] = array();
-        }
-        if ($users) {
-            $avatars = Pi::avatar()->getList(array_keys($users));
-            $names = Pi::user()->get(array_keys($users), 'name');
-            foreach ($users as $uid => &$user) {
-                $user = array(
-                    'name'      => $names[$uid],
-                    'avatar'    => $avatars[$uid],
-                    'url'       => Pi::user()->getUrl('profile', $uid),
-                );
-            }
-            $result['users'] = $users;
         }
 
         return $result;
@@ -379,12 +386,13 @@ class Api extends AbstractApi
      *      - avatar: false|<size>
      *      - url: 'profile'|'comment'
      *
-     *  - operation:
+     *  - operation: with array
      *      - uid: int
      *      - user: object
      *      - section: 'front'|'admin'
      *      - list: array(<name> => <title>)
-     *      - admin: bool (To check admin)
+     *      - level: member, author, admin; default as author
+     *  - operation: with string for level
      *
      *  - target
      *
@@ -394,12 +402,13 @@ class Api extends AbstractApi
      *      'user'      => array(
      *          'field'     => 'name',
      *          'url'       => 'comment',
-     *          'avatar'    => 'small'
+     *          'avatar'    => 'small',
      *      ),
      *      'target'    => true,
      *      'operation'     => array(
      *          'uid'       => Pi::service('user')->getIdentity(),
      *          'section'   => 'admin',
+     *          'level'     => 'author',
      *      ),
      *  ));
      * ```
@@ -470,7 +479,7 @@ class Api extends AbstractApi
                 );
             }
             $users[0] = array(
-                'avatar'    => Pi::service('avatar')->get(0, 'small'),
+                'avatar'    => Pi::service('avatar')->get(0, 'medium'),
                 'url'       => Pi::url('www'),
                 'name'      => __('Guest'),
             );
@@ -480,27 +489,20 @@ class Api extends AbstractApi
 
         // Build operations
         if (!isset($options['operation']) || $options['operation']) {
-            $op = isset($options['operation'])
-                ? (array) $options['operation'] : array();
+            if (!isset($options['operation'])) {
+                $op = array();
+            } elseif (is_string($options['operation'])) {
+                $op = array('level' => $options['operation']);
+            } else {
+                $op = (array) $options['operation'];
+            }
+
             $uid = $user = $list = $section = $admin = null;
             if (isset($op['uid'])) {
                 $uid = (int) $op['uid'];
             }
             if (isset($op['user'])) {
                 $user = $op['user'];
-            }
-            if (isset($op['section'])) {
-                $section = $op['section'];
-            } else {
-                $section = Pi::engine()->section();
-            }
-            if (isset($op['admin'])) {
-                $admin = (bool) $op['admin'];
-            } else {
-                $admin = true;
-            }
-            if (isset($op['list'])) {
-                $list = (array) $op['list'];
             }
             if (null === $uid) {
                 if (null === $user) {
@@ -509,9 +511,16 @@ class Api extends AbstractApi
                     $uid = $user->get('id');
                 }
             }
-            $isAdmin = $admin
-                && Pi::service('permission')->isAdmin('comment', $uid);
 
+            if (isset($op['section'])) {
+                $section = $op['section'];
+            } else {
+                $section = Pi::engine()->section();
+            }
+
+            if (isset($op['list'])) {
+                $list = (array) $op['list'];
+            }
             if (null === $list) {
                 $list = array(
                     'edit'      => __('Edit'),
@@ -521,15 +530,20 @@ class Api extends AbstractApi
                 );
             }
 
+            $level      = isset($op['level']) ? $op['level'] : 'author';
+            $isAdmin    = Pi::service('permission')->isAdmin('comment', $uid);
+            $_this      = $this;
             $setOperations = function ($post) use (
                 $list,
                 $uid,
                 $isAdmin,
-                $section
+                $level,
+                $section,
+                $_this
             ) {
-                if ($isAdmin) {
+                if ('admin' == $level && $isAdmin) {
                     $opList = array('edit', 'approve', 'delete', 'reply');
-                } elseif ($uid = $post['uid']) {
+                } elseif ('author' == $level && $uid == $post['uid']) {
                     $opList = array('edit', 'delete', 'reply');
                 } elseif ($uid) {
                     $opList = array('reply');
@@ -556,7 +570,7 @@ class Api extends AbstractApi
                                     )
                                 );
                             } else {
-                                $url = $this->getUrl($op, array(
+                                $url = $_this->getUrl($op, array(
                                     'post' => $post['id']
                                 ));
                             }
@@ -582,7 +596,7 @@ class Api extends AbstractApi
                                     )
                                 );
                             } else {
-                                $url = $this->getUrl($op, array(
+                                $url = $_this->getUrl($op, array(
                                     'post'  => $post['id'],
                                     'flag'  => $flag,
                                 ));
@@ -591,15 +605,13 @@ class Api extends AbstractApi
                         case 'reply':
                             if ('admin' == $section) {
                             } else {
-                                $url = $this->getUrl($op, array(
+                                $url = $_this->getUrl($op, array(
                                     'post' => $post['id']
                                 ));
                             }
                             $title = $list[$op];
                             break;
                         default:
-                            $url = '';
-                            $title = '';
                             break;
                     }
                     if (!$url || !$title) {
@@ -623,6 +635,7 @@ class Api extends AbstractApi
                 'callback'  => $setOperations,
             );
         }
+
         // Build targets
         if (!isset($options['target']) || $options['target']) {
             $targets = array();
@@ -641,8 +654,8 @@ class Api extends AbstractApi
 
         $_this = $this;
         array_walk($posts, function (&$post) use ($ops, $_this) {
-            $post['content'] = $this->renderPost($post);
-            $post['url'] = $this->getUrl('post', array(
+            $post['content'] = $_this->renderPost($post);
+            $post['url'] = $_this->getUrl('post', array(
                 'post'  => $post['id']
             ));
             if (!empty($ops['users'])) {
@@ -746,7 +759,7 @@ class Api extends AbstractApi
     /**
      * Add comment root of an item
      *
-     * @param array $data module, item, category, time
+     * @param array $data module, item, author, category, time
      *
      * @return int|bool
      */
@@ -755,6 +768,16 @@ class Api extends AbstractApi
         $id = isset($data['id']) ? (int) $data['id'] : 0;
         if (isset($data['id'])) {
             unset($data['id']);
+        }
+        if (!isset($data['author'])) {
+            $category = Pi::registry('category', 'comment')->read(
+                $data['module'],
+                $data['category']
+            );
+            $callback = $category['callback'];
+            $handler = new $callback($data['module']);
+            $source = $handler->get($data['item']);
+            $data['author'] = $source['uid'];
         }
         $rootData = $this->canonizeRoot($data);
         if (!$id) {
@@ -934,7 +957,7 @@ class Api extends AbstractApi
         $select = Pi::db()->select();
         $select->from(
             array('root' => Pi::model('root', 'comment')->getTable()),
-            array('id', 'module', 'category', 'item')
+            array('id', 'module', 'category', 'item', 'author')
         );
 
         $select->join(
@@ -1021,21 +1044,14 @@ class Api extends AbstractApi
             $whereRoot = array();
             if (is_array($condition)) {
                 $wherePost = $this->canonizePost($condition);
-                /*
-                if (isset($condition['module'])) {
-                    $whereRoot['module'] = $condition['module'];
-                }
-                */
                 if (isset($condition['category'])) {
                     $whereRoot['category'] = $condition['category'];
                 }
-                if (isset($whereRoot['category'])) {
+                if (isset($condition['author'])) {
+                    $whereRoot['author'] = $condition['author'];
+                }
+                if ($whereRoot) {
                     $isJoin = true;
-                    /*
-                    if (isset($wherePost['active'])) {
-                        $whereRoot['active'] = $wherePost['active'];
-                    }
-                    */
                 }
             } else {
                 $wherePost = array(
@@ -1120,21 +1136,14 @@ class Api extends AbstractApi
             //$wherePost = array();
             if (is_array($condition)) {
                 $wherePost = $this->canonizePost($condition);
-                /*
-                if (isset($condition['module'])) {
-                    $whereRoot['module'] = $condition['module'];
-                }
-                */
                 if (isset($condition['category'])) {
                     $whereRoot['category'] = $condition['category'];
                 }
-                if (isset($whereRoot['category'])) {
+                if (isset($condition['author'])) {
+                    $whereRoot['author'] = $condition['author'];
+                }
+                if ($whereRoot) {
                     $isJoin = true;
-                    /*
-                    if (isset($wherePost['active'])) {
-                        $whereRoot['active'] = $wherePost['active'];
-                    }
-                    */
                 }
             } else {
                 $wherePost = array(
@@ -1190,11 +1199,9 @@ class Api extends AbstractApi
         } else {
             $whereRoot = array();
             $wherePost = $this->canonizePost($condition);
-            /**/
             if (isset($wherePost['active'])) {
                 $whereRoot['active'] = $wherePost['active'];
             }
-            /**/
             if (isset($condition['category'])) {
                 $whereRoot['category'] = $condition['category'];
             }

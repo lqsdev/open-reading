@@ -15,11 +15,26 @@ return array(
             'controller'    => 'list',
             'action'        => 'index',
         ),
+        'article'      => array(
+            'route'         => 'comment',
+            'label'         => _t('Commented articles'),
+            'controller'    => 'list',
+            'action'        => 'article',
+        ),
         'my-post'   => array(
             'route'         => 'comment',
             'label'         => _t('My comments'),
             'controller'    => 'list',
             'action'        => 'user',
+            'params'        => array(
+                'my'    => 1,
+            ),
+        ),
+        'my-received'   => array(
+            'route'         => 'comment',
+            'label'         => _t('My received'),
+            'controller'    => 'list',
+            'action'        => 'received',
             'params'        => array(
                 'my'    => 1,
             ),

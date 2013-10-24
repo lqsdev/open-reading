@@ -264,14 +264,14 @@ body {
     -moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, .15), inset 0 -1px 3px rgba(0, 0, 0, .1);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, .15), inset 0 -1px 3px rgba(0, 0, 0, .1);
     padding: 1px 0;
-    width: 52px;
-    height: 20px;
+    width: 50px;
+    height: 18px;
     cursor: pointer;
 }
 
 .pi-status-director {
     background: #fff;
-    height: 20px;
+    height: 18px;
     width: 50%;
     position: absolute;
     left: 0;
@@ -297,4 +297,75 @@ body {
     cursor: default;
     opacity: 0.5;
     filter: alpha(opacity=50);
+}
+
+.pi-icon-cursor {
+    cursor: pointer;
+    color: #999;
+}
+
+.pi-icon-cursor:hover {
+    color: #666;
+}
+
+.pi-row-action {
+    visibility: hidden;
+}
+
+.pi-row-action a {
+    padding-right: 5px;
+    font-size: 12px;
+}
+
+tr:hover .pi-row-action {
+    visibility: visible;
+}
+
+.pi-hover-input input {
+    display: none;
+    margin-bottom: 0;
+}
+
+.pi-hover-input {
+    margin-left: -7px;
+}
+
+.pi-hover-input span {
+    display: inline-block;
+    height: 28px;
+    line-height: 28px;
+    border: 1px solid transparent;
+    padding: 0 15px 0 7px;
+    cursor: pointer;
+}
+
+.pi-hover-input:hover span {
+   border: 1px solid #ccc;
+}
+
+.pi-hover-input-editing input {
+    display: inline-block;
+}
+
+.pi-hover-input-editing span {
+    display: none;
+}
+
+.pi-widget-item {
+    background-color: #F1F1F1;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#F9F9F9,endColorstr=#ECECEC);
+    background-image: -moz-linear-gradient(center top , #F9F9F9, #ECECEC);
+    background-image: -webkit-linear-gradient(top , #F9F9F9, #ECECEC);
+    background-image: -o-linear-gradient(top , #F9F9F9, #ECECEC);
+    padding: 4px 8px;
+    box-shadow: 0 1px 0 #FFFFFF inset;
+    border: 1px solid #DFDFDF;
+    cursor: move;
+    margin-bottom: 10px;
+}
+
+.pi-user-select-disabled {
+    user-select: none;
+    -webkit-select: none;
+    -o-select: none;
 }

@@ -29,24 +29,13 @@ return array(
         ),
 
         'profile' => array(
-            'label'         => _t('Profile field'),
+            'label'         => _t('Profile'),
             'permission'    => array(
                 'resource'  => 'profile',
             ),
             'route'         => 'admin',
             'module'        => 'user',
             'controller'    => 'profile',
-            'action'        => 'index',
-        ),
-
-        'avatar' => array(
-            'label'         => _t('Avatar'),
-            'permission'    => array(
-                'resource'  => 'avatar',
-            ),
-            'route'         => 'admin',
-            'module'        => 'user',
-            'controller'    => 'avatar',
             'action'        => 'index',
         ),
 
