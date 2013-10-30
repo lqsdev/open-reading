@@ -15,17 +15,45 @@ use Module\Book\Form\ArticleFilter;
 use Module\Book\Form\ArticleForm;
 use Pi;
 use Module\Book\Service;
+use Module\Book\Media;
 
 /**
  * Article controller
  */
 class ArticleController extends ActionController
 {
+    protected function submit($id, $articleId)
+    {
+        // Move asset
+        $modelDraftAsset     = $this->getModel('asset_draft');
+        $resultsetDraftAsset = $modelDraftAsset->select(array(
+            'draft' => $id,
+        ));
+        $modelAsset = $this->getModel('asset');
+        foreach ($resultsetDraftAsset as $asset) {
+            $data = array(
+                'media'         => $asset->media,
+                'type'          => $asset->type,
+                'article'       => $articleId,
+            );
+            $rowAsset = $modelAsset->createRow($data);
+            $rowAsset->save();
+        }
+
+        // Clear draft assets info
+        $modelDraftAsset->delete(array('draft' => $id));
+    }
+    
     public function editAction()
     {
         $form = new ArticleForm('article');        
         $form->setAttribute('action', $this->url('', array('action' => 'edit')));
-        $this->view()->assign('form', $form);                
+        $this->view()->assign('form', $form);
+        
+        $configs = Pi::service('module')->config('', $this->getModule());
+        $configs['max_media_size'] = Media::transferSize($configs['max_media_size']);
+        $configs['max_image_size'] = Media::transferSize($configs['max_image_size']);
+        $this->view()->assign('configs', $configs);
         
         if ($this->request->isPost()) {
             $post = $this->request->getPost();
@@ -35,13 +63,15 @@ class ArticleController extends ActionController
                 $this->view()->assign('form', $form);
                 return;
             }
-            $data = $form->getData();                     
+            $data = $form->getData();
             $inputData = array(
                 'title'   => $data['title'],
                 'content' => $data['content'],
                 );
             $row = $this->getModel('article')->createRow($inputData);
-            $row->save(); 
+            $row->save();
+            
+            $this->submit($data['fake_id'], $row->id);
         }
         $this->view()->setTemplate('article-edit');
     }
@@ -204,5 +234,105 @@ class ArticleController extends ActionController
             'status'    => $affectedRows ? true : false,
             'message'   => 'ok',
         );
+    }
+    
+    /**
+     * Save asset
+     */
+    public function saveAssetAction()
+    {
+        Pi::service('log')->active(false);
+        
+        $type    = Service::getParam($this, 'type', 'attachment');
+        $mediaId = Service::getParam($this, 'media', 0);
+        $draftId = Service::getParam($this, 'id', 0);
+        if (empty($draftId)) {
+            $draftId = Service::getParam($this, 'fake_id', 0);
+        }
+        
+        $return = array('status' => false);
+        // Checking if is draft exists
+        if (empty($draftId)) {
+            $return['message'] = __('Invalid draft ID!');
+            echo json_encode($return);
+            exit();
+        }
+        
+        // Checking if is media exists
+        $rowMedia = $this->getModel('media')->find($mediaId);
+        if (empty($rowMedia)) {
+            $return['message'] = __('Invalid media!');
+            echo json_encode($return);
+            exit();
+        }
+        
+        // Saving asset data
+        $model     = $this->getModel('asset_draft');
+        $rowAssets = $model->select(array(
+            'draft' => $draftId,
+            'media' => $mediaId
+        ));
+        if ($rowAssets->count() == 0) {
+            $data     = array(
+                'draft'   => $draftId,
+                'media'   => $mediaId,
+                'type'    => $type,
+            );
+            $row = $model->createRow($data);
+            $row->save();
+            
+            if (!$row->id) {
+                $return['message'] = __('Can not save data!');
+                echo json_encode($return);
+                exit();
+            }
+        }
+        
+        $return['data']    = array(
+            'media'       => $mediaId,
+            'id'          => $row->id,
+            'title'       => $rowMedia->title,
+            'size'        => $rowMedia->size,
+            'downloadUrl' => $this->url('admin', array(
+                'controller' => 'media',
+                'action'     => 'download',
+                'id'         => $mediaId,
+            )),
+        );
+        // Generating a preview url for image file
+        if ('image' == $type) {
+            $return['data']['preview_url'] = Pi::url($rowMedia->url);
+        }
+        $return['status']  = true;
+        $return['message'] = __('Save asset successful!');
+        echo json_encode($return);
+        exit();
+    }
+    
+    /**
+     * Delete asset
+     */
+    public function removeAssetAction()
+    {
+        Pi::service('log')->active(false);
+        
+        $return = array('status' => false);
+        $id = Service::getParam($this, 'id', 0);
+        if (empty($id)) {
+            $return['message'] = __('Invalid ID!');
+            echo json_encode($return);
+            exit();
+        }
+        
+        $result = $this->getModel('asset_draft')->delete(array('id' => $id));
+        if ($result) {
+            $return['message'] = __('Delete item sucessful!');
+            $return['status']  = true;
+        } else {
+            $return['message'] = __('Can not delete item!');
+        }
+        
+        echo json_encode($return);
+        exit();
     }
 }
