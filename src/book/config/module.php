@@ -30,21 +30,13 @@ return array(
     'dependency'    => array(
     ),
     // Maintenance actions
-    'maintenance'   => array(
-        'resource'      => array(
-            'database'      => array(
-                'sqlfile'      => 'sql/mysql.sql',
-                'schema'       => array(
-                    'book'                  => 'table',
-                    'catalogue'             => 'table',
-                    'catalogue_rel_article' => 'table',
-                    'article'               => 'table',
-                ),
-            ),
-            // Database meta
-            'navigation'    => 'navigation.php',
-            'route'         => 'route.php',
-            'config'        => 'config.php',
+    'resource'      => array(
+        'database'      => array(
+            'sqlfile'      => 'sql/mysql.sql',
         ),
+        // Database meta
+        'navigation'    => 'navigation.php',
+        'route'         => 'route.php',
+        'config'        => 'config.php',
     ),
 );

@@ -1,3 +1,25 @@
+CREATE TABLE `{asset}` (
+  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
+  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `article`         int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
+
+  PRIMARY KEY                   (`id`),
+  UNIQUE KEY `media_article`    (`media`, `article`),
+  KEY `article_type`            (`article`, `type`),
+  KEY `media`                   (`media`)
+);
+
+CREATE TABLE `{asset_draft}` (
+  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
+  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `draft`           varchar(255)          NOT NULL DEFAULT '',
+  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
+
+  PRIMARY KEY                   (`id`),
+  KEY `draft_type`              (`draft`, `type`)
+);
+
 CREATE TABLE `{book}` (
   `id`              int(10) unsigned                NOT NULL AUTO_INCREMENT,
   `title`           varchar(255)                    NOT NULL,     
@@ -56,3 +78,4 @@ CREATE TABLE `{media_statistics}` (
   PRIMARY KEY           (`id`),
   UNIQUE KEY `media`    (`media`)
 );
+
