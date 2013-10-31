@@ -28,8 +28,8 @@ class ActivityController extends ActionController
     {
         $name     = _get('name');
         $uid      = _get('uid');
-        $ownerUid = Pi::user()->getIdentity();
-        $limit    = 10;
+        $ownerUid = Pi::user()->getId();
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $isOwner  = 0;
 
         if (!$uid && !$ownerUid) {
@@ -55,7 +55,7 @@ class ActivityController extends ActionController
         if ($isOwner) {
             $role = 'owner';
         } else {
-            $role = Pi::user()->getIdentity() ? 'member' : 'public';
+            $role = Pi::user()->hasIdentity() ? 'member' : 'public';
         }
         $user = Pi::api('user', 'privacy')->filterProfile(
             $uid,
@@ -77,14 +77,18 @@ class ActivityController extends ActionController
             $nav = Pi::api('user', 'nav')->getList($name, $uid);
         }
 
+        // Get quick link
+        $quicklink = Pi::api('user','quicklink')->getList();
+
         $this->view()->assign(array(
-            'list'     => $activityList,
-            'current'  => $name,
-            'data'     => $data,
-            'user'     => $user,
-            'nav'      => $nav,
-            'uid'      => $uid,
-            'is_owner' => $isOwner,
+            'list'      => $activityList,
+            'current'   => $name,
+            'data'      => $data,
+            'user'      => $user,
+            'nav'       => $nav,
+            'uid'       => $uid,
+            'quicklink' => $quicklink,
+            'is_owner'  => $isOwner,
         ));
 
     }

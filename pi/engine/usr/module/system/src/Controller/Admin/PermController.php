@@ -39,14 +39,22 @@ class PermController extends ComponentController
         if (!$this->permission($module, 'permission')) {
             return;
         }
+        
+        $this->view()->setTemplate('perm');
+        $this->view()->assign('name', $module);
+    }
 
-        // Load all active roles of current section
-        $roles = array(
-            'front' => Pi::registry('role')->read('front'),
-            'admin' => Pi::registry('role')->read('admin'),
-        );
+    public function resourcesAction() 
+    {
+        $section = _get('section') ? : 'front';
+        $module = _get('name') ? : 'system';
+        $roles = Pi::registry('role')->read($section);
 
-        $resources = array(
+        if (!$this->permission($module, 'permission')) {
+            return;
+        }
+
+        $resourceList = array(
             'front' => array(
                 'global'    => array(),
                 'module'    => array(),
@@ -57,63 +65,50 @@ class PermController extends ComponentController
                 'module'    => array(),
             ),
         );
+        $resources = $resourceList[$section];
         Pi::service('i18n')->load('module/' . $module . ':permission');
-        foreach (array('front', 'admin') as $section) {
-            $resources[$section]['global']['module-access'] = array(
-                'section'   => $section,
-                'module'    => $module,
-                'resource'  => 'module-access',
-                'title'     => __('Module access'),
-                'roles'     => array(),
-            );
-            $resources[$section]['global']['module-admin'] = array(
-                'section'   => $section,
-                'module'    => $module,
-                'resource'  => 'module-admin',
-                'title'     => __('Module admin'),
-                'roles'     => array(),
-            );
-        }
-        /*
-        $resources['admin']['global']['module-manage'] = array(
-            'section'   => 'admin',
+        
+        $resources['global']['module-access'] = array(
+            'section'   => $section,
             'module'    => $module,
-            'resource'  => 'module-manage',
-            'title'     => __('Module settings'),
+            'resource'  => 'module-access',
+            'title'     => __('Module access'),
             'roles'     => array(),
         );
-        */
+        $resources['global']['module-admin'] = array(
+            'section'   => $section,
+            'module'    => $module,
+            'resource'  => 'module-admin',
+            'title'     => __('Module admin'),
+            'roles'     => array(),
+        );
 
-        // Load module defined resources
+
         $rowset = Pi::model('permission_resource')->select(array(
             'module'    => $module,
+            'section'   => $section,
         ));
-        $callback = array();
+        $callback = '';
         foreach ($rowset as $row) {
             if ('custom' == $row['type']) {
-                $callback[$row['section']] = $row['name'];
+                $callback = $row['name'];
                 continue;
             }
-            $resources[$row['section']]['module'][$row['name']] = array(
-                'section'   => $row['section'],
+            $resources['module'][$row['name']] = array(
+                'section'   => $section,
                 'module'    => $module,
                 'resource'  => $row['name'],
                 'title'     => __($row['title']),
                 'roles'     => array(),
             );
         }
-
-        // Load module custom resources
-        foreach (array('front', 'admin') as $section) {
-            if (empty($callback[$section])) {
-                continue;
-            }
-            $callbackClass      = $callback[$section];
+        if ($callback) {
+            $callbackClass      = $callback;
             $callbackHandler    = new $callbackClass($module);
             $resourceCustom     = $callbackHandler->getResources();
             foreach ($resourceCustom as $name => $title) {
                 $key = $name;
-                $resources[$section]['module'][$key] = array(
+                $resources['module'][$key] = array(
                     'section'   => $section,
                     'module'    => $module,
                     'title'     => $title,
@@ -124,64 +119,53 @@ class PermController extends ComponentController
         }
 
         // Load block resources
-        $model = Pi::model('block');
-        $select = $model->select()
-            ->where(array('module' => $module))->order(array('id ASC'));
-        $rowset = $model->selectWith($select);
-        foreach ($rowset as $row) {
-            $key = 'block-' . $row['id'];
-            $resources['front']['block'][$key] = array(
-                'section'   => 'front',
-                'module'    => $module,
-                'resource'  => $key,
-                'title'     => $row['title'],
-                'roles'     => array(),
-            );
+        if ('front' == $section) {
+            $model = Pi::model('block');
+            $select = $model->select()
+                ->where(array('module' => $module))->order(array('id ASC'));
+            $rowset = $model->selectWith($select);
+            foreach ($rowset as $row) {
+                $key = 'block-' . $row['id'];
+                $resources['block'][$key] = array(
+                    'section'   => 'front',
+                    'module'    => $module,
+                    'resource'  => $key,
+                    'title'     => $row['title'],
+                    'roles'     => array(),
+                );
+            }
         }
+ 
 
         $rowset = Pi::model('permission_rule')->select(array(
             'module'    => $module,
+            'section'   => $section,
         ));
         $rules = array();
         foreach ($rowset as $row) {
-            $rules[$row['section']][$row['resource']][$row['role']] = 1;
+            $rules[$row['resource']][$row['role']] = 1;
         }
 
-        $roleList = array();
-        foreach ($roles as $section => $rList) {
-            $roleList[$section] = array_fill_keys(array_keys($rList), 0);
-        }
-
+        $roleList = array_fill_keys(array_keys($roles), 0);
         $resourceData = array();
-        foreach ($resources as $section => &$sectionList) {
-            foreach ($sectionList as $type => &$typeList) {
-                foreach ($typeList as $name => &$resource) {
-                    $perms = array();
-                    foreach ($roleList[$section] as $role => $val) {
-                        $perms[$role] = isset($rules[$section][$name][$role])
-                            ? $rules[$section][$name][$role] : $val;
-                    }
-                    $resource['roles'] = $perms;
-                    $resourceData[$section][$type][] = $resource;
+        foreach ($resources as $type => &$typeList) {
+            foreach ($typeList as $name => &$resource) {
+                $perms = array();
+                foreach ($roleList as $role => $val) {
+                    $perms[$role] = isset($rules[$name][$role])
+                        ? $rules[$name][$role] : $val;
                 }
+                $resource['roles'] = $perms;
+                $resourceData[$type][] = $resource;
             }
         }
-
-        $moduleList = Pi::registry('modulelist')->read('active');
-        $modules = array();
-        foreach ($moduleList as $name => $list) {
-            $modules[$name] = $list['title'];
-        }
-
-        //d($roles);
-        //d($modules);
-        //d($resourceData);
-        $this->view()->setTemplate('perm');
-        $this->view()->assign('name', $module);
-        $this->view()->assign('title', __('Module permissions'));
-        $this->view()->assign('roles', $roles);
-        $this->view()->assign('modules', $modules);
-        $this->view()->assign('resources', $resourceData);
+        /*d($resourceData);
+        d($roles);
+        exit();*/
+        return array(
+            'resources' => $resourceData,
+            'roles'     => $roles
+        );
     }
 
     /**

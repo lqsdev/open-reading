@@ -12,6 +12,7 @@ namespace Module\Comment\Controller\Admin;
 use Pi;
 use Pi\Mvc\Controller\ActionController;
 use Pi\Paginator\Paginator;
+use Zend\Db\Sql\Expression;
 
 /**
  * Comment list controller
@@ -48,7 +49,7 @@ class ListController extends ActionController
             ),
             'target'    => true,
             'operation'     => array(
-                'uid'       => Pi::service('user')->getIdentity(),
+                'uid'       => Pi::service('user')->getId(),
                 'section'   => 'admin',
                 'level'     => 'admin',
             ),
@@ -64,7 +65,10 @@ class ListController extends ActionController
         */
         // Default mode
         $posts = Pi::api('comment')->renderList($posts, array(
-            'operation'     => 'admin'
+            'operation'     => 'admin',
+            'user'          => array(
+                'avatar'    => 'medium',
+            ),
         ));
         $count = Pi::service('comment')->getCount(array('active' => $active));
 
@@ -88,19 +92,30 @@ class ListController extends ActionController
             'count'     => $count,
             'posts'     => $posts,
             'paginator' => $paginator,
+            'active'    => $active,
         ));
+        
+        $allCount = null === $active
+            ? $count 
+            : Pi::service('comment')->getCount(array('active' => null));
+        $activeCount = 1 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array('active' => 1));
+        $inactiveCount = 0 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array('active' => 0));
 
         $navTabs = array(
             array(
                 'active'    => null === $active,
-                'label'     => __('All Posts'),
+                'label'     => __('All Posts') . " ({$allCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'index',
                 ))
             ),
             array(
                 'active'    => 1 == $active,
-                'label'     => __('Active Posts'),
+                'label'     => __('Active Posts') . " ({$activeCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'index',
                     'active'    => 1,
@@ -108,7 +123,7 @@ class ListController extends ActionController
             ),
             array(
                 'active'    => 0 === $active,
-                'label'     => __('Inactive Posts'),
+                'label'     => __('Inactive Posts') . " ({$inactiveCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'index',
                     'active'    => 0,
@@ -127,6 +142,12 @@ class ListController extends ActionController
     public function userAction()
     {
         $uid        = _get('uid');
+        $keyword    = _get('keyword');
+        if (!empty($keyword)) {
+            $uid = $keyword;
+        } else {
+            $keyword = $uid;
+        }
         $userModel  = null;
         if (is_numeric($uid)) {
             $userModel = Pi::service('user')->getUser($uid);
@@ -137,11 +158,11 @@ class ListController extends ActionController
             $user = array(
                 'name'      => $userModel->get('name'),
                 'url'       => Pi::service('user')->getUrl('profile', $uid),
-                'avatar'    => Pi::service('avatar')->get($uid),
+                'avatar'    => Pi::service('avatar')->get($uid, 'medium'),
             );
         } else {
             $this->view()->assign(array(
-                'title' => __('Select a user'),
+                'title' => __('Comments by username or id'),
                 'url'   => $this->url('', array('action' => 'user')),
             ));
             $this->view()->setTemplate('comment-user-select');
@@ -187,12 +208,33 @@ class ListController extends ActionController
             'posts'     => $posts,
             'paginator' => $paginator,
             'user'      => $user,
+            'active'    => $active,
         ));
+        
+        // Get count
+        $allCount = null === $active
+            ? $count 
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => null)
+            ));
+        $activeCount = 1 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => 1)
+            ));
+        $inactiveCount = 0 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => 0)
+            ));
 
         $navTabs = array(
             array(
                 'active'    => null === $active,
-                'label'     => __('All Posts'),
+                'label'     => __('All Posts') . " ({$allCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'user',
                     'uid'       => $uid,
@@ -200,7 +242,7 @@ class ListController extends ActionController
             ),
             array(
                 'active'    => 1 == $active,
-                'label'     => __('Active Posts'),
+                'label'     => __('Active Posts') . " ({$activeCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'user',
                     'uid'       => $uid,
@@ -209,7 +251,7 @@ class ListController extends ActionController
             ),
             array(
                 'active'    => 0 === $active,
-                'label'     => __('Inactive Posts'),
+                'label'     => __('Inactive Posts') . " ({$inactiveCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'user',
                     'uid'       => $uid,
@@ -219,6 +261,7 @@ class ListController extends ActionController
         );
         $this->view()->assign(array(
             'tabs'      => $navTabs,
+            'keyword'   => $keyword,
         ));
         $this->view()->setTemplate('comment-user');
     }
@@ -306,6 +349,9 @@ class ListController extends ActionController
         );
         $posts = Pi::api('comment')->renderList($posts, array(
             'operation' => 'admin',
+            'user'      => array(
+                'avatar'    => 'medium',
+            ),
         ));
         $count = Pi::service('comment')->getCount($where);
 
@@ -339,12 +385,33 @@ class ListController extends ActionController
             'paginator' => $paginator,
             'module'    => $moduleData,
             'category'  => $categoryData,
+            'active'    => $active,
         ));
+        
+        // Get count
+        $allCount = null === $active
+            ? $count 
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => null)
+            ));
+        $activeCount = 1 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => 1)
+            ));
+        $inactiveCount = 0 === $active
+            ? $count
+            : Pi::service('comment')->getCount(array_merge(
+                $where,
+                array('active' => 0)
+            ));
 
         $navTabs = array(
             array(
                 'active'    => null === $active,
-                'label'     => __('All Posts'),
+                'label'     => __('All Posts') . " ({$allCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'module',
                     'name'      => $module,
@@ -353,7 +420,7 @@ class ListController extends ActionController
             ),
             array(
                 'active'    => 1 == $active,
-                'label'     => __('Active Posts'),
+                'label'     => __('Active Posts') . " ({$activeCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'module',
                     'name'      => $module,
@@ -363,7 +430,7 @@ class ListController extends ActionController
             ),
             array(
                 'active'    => 0 === $active,
-                'label'     => __('Inactive Posts'),
+                'label'     => __('Inactive Posts') . " ({$inactiveCount})",
                 'href'      => $this->url('', array(
                     'action'    => 'module',
                     'name'      => $module,
@@ -433,6 +500,17 @@ class ListController extends ActionController
         $count = Pi::api('comment')->getTargetCount(array(
             'active'    => $active,
         ));
+        
+        $roots = array_keys($targets);
+        $model = $this->getModel('post');
+        $select = $model->select()
+            ->where(array('root' => $roots ?: array()))
+            ->columns(array('root', 'count' => new Expression('count(*)')))
+            ->group(array('root'));
+        $rowset = $model->selectWith($select);
+        foreach ($rowset as $row) {
+            $targets[$row->root]['count'] = $row->count;
+        }
 
         $params = (null === $active) ? array() : array('active' => $active);
         $paginator = Paginator::factory($count, array(

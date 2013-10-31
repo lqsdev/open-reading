@@ -28,7 +28,7 @@ class HomeController extends ActionController
     public function indexAction()
     {
         $page   = $this->params('page', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $isLogin = Pi::user()->hasIdentity();
@@ -41,7 +41,7 @@ class HomeController extends ActionController
             return;
         }
 
-        $uid  = Pi::user()->getIdentity();
+        $uid  = Pi::user()->getId();
         // Get user information
         $user = $this->getUser($uid);
 
@@ -62,7 +62,7 @@ class HomeController extends ActionController
         $nav = Pi::api('user', 'nav')->getList('homepage');
 
         // Get quick link
-        $quicklink = $this->getQuicklink();
+        $quicklink = Pi::api('user','quicklink')->getList();
 
 
         // Set paginator
@@ -92,7 +92,7 @@ class HomeController extends ActionController
     public function viewAction()
     {
         $page   = $this->params('page', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $uid = $this->params('uid', '');
@@ -103,7 +103,7 @@ class HomeController extends ActionController
         $user = $this->getUser($uid);
 
         // Get viewer role: public member follower following owner
-        $role = Pi::user()->getIdentity() ? 'member' : 'public';
+        $role = Pi::user()->hasIdentity() ? 'member' : 'public';
         $user = Pi::api('user', 'privacy')->filterProfile(
             $uid,
             $role,
@@ -128,8 +128,7 @@ class HomeController extends ActionController
         $nav = Pi::api('user', 'nav')->getList('homepage', $uid);
 
         // Get quick link
-        $quicklink = $this->getQuicklink();
-
+        $quicklink = Pi::api('user','quicklink')->getList();
 
         // Set paginator
         $paginatorOption = array(
@@ -151,49 +150,6 @@ class HomeController extends ActionController
             'is_owner'     => false,
             'nav'          => $nav,
         ));
-    }
-
-    /**
-     * Get quicklink
-     *
-     * @param null $limit
-     * @param null $offset
-     * @return array
-     */
-    protected function getQuicklink($limit = null, $offset = null)
-    {
-        $result = array();
-        $model = $this->getModel('quicklink');
-        $where = array(
-            'active'  => 1,
-            'display' => 1,
-        );
-        $columns = array(
-            'id',
-            'name',
-            'title',
-            'module',
-            'link',
-            'icon',
-        );
-
-        $select = $model->select()->where($where);
-        if ($limit) {
-            $select->limit($limit);
-        }
-        if ($offset) {
-            $select->offset($offset);
-        }
-
-        $select->columns($columns);
-        $rowset = $model->selectWith($select);
-
-        foreach ($rowset as $row) {
-            $result[] = $row->toArray();
-        }
-
-        return $result;
-
     }
 
     /**

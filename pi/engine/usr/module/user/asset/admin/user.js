@@ -17,9 +17,6 @@
               var users = data.users;
               for (var i = 0, l = users.length; i < l; i++) {
                 var item = users[i];
-                item.time_disabled *= 1000;
-                item.time_created *= 1000;
-                item.time_activated *= 1000;
                 item.checked = 0;
                 if (item.front_roles) {
                   item.front_roles = item.front_roles.join(',');
@@ -30,9 +27,6 @@
               }
               angular.extend(data, server.getRoles());
               data.filter = params;
-              if (!users.length) {
-                data.noneMessage = config.t.NONE_USER;
-              }
               deferred.resolve(data);
               $rootScope.alert = '';
             });
@@ -64,6 +58,22 @@
       templateUrl: tpl('advanced-search-result'),
       controller: 'ListCtrl',
       resolve: resolve('search')
+    }).when('/edit/:id/:action?', {
+      templateUrl: tpl('user-edit'),
+      controller: 'EditCtrl',
+      resolve: {
+        data: ['$q', '$route', 'editServer',
+          function($q, $route, editServer) {
+            var deferred = $q.defer();
+            var params = $route.current.params;
+            params.action = params.action || 'info';
+            editServer.get(params).success(function(data) {
+              deferred.resolve(data);
+            });
+            return deferred.promise;
+          }
+        ]
+      }
     }).otherwise({
       redirectTo: '/all'
     });
@@ -72,6 +82,7 @@
     piProvider.navTabs(config.navTabs);
     piProvider.translations(config.t);
     piProvider.ajaxSetup();
+    piProvider.setGetHeader();
   }
 ])
 .service('server', ['$http', '$cacheFactory', 'config',
@@ -97,6 +108,7 @@
     this.getRoles = function () {
       var frontRoles = [];
       var adminRoles = [];
+      var assignRoles = [];
       angular.forEach(config.roles, function(item) {
         if (item.type == 'front') {
           frontRoles.push(item);
@@ -104,11 +116,15 @@
         if (item.type == 'admin') {
           adminRoles.push(item);
         }
+        if (item.name != 'member') {
+          assignRoles.push(item);
+        }
       });
       return {
         'frontRoles': frontRoles,
         'adminRoles': adminRoles,
-        'roles': config.roles
+        'roles': config.roles,
+        'assignRoles': assignRoles
       };
     }
 
@@ -174,10 +190,58 @@
     this.uniqueUrl = urlRoot + 'checkExist';
   }
 ])
+.service('editServer', ['$http', 'config',
+  function($http, config) {
+    var urlRoot = config.editUrlRoot;
+    this.urlRoot = config.editUrlRoot;
+
+    this.get = function(params) {
+      var id = params.id;
+      return $http.get(urlRoot + 'index', {
+        cache: true,
+        params: {
+          uid: id
+        }
+      }).success(function(data) {
+          data.action = params.action;
+          angular.forEach(data.nav, function(item) {
+            item.href = '#!/edit/' + id + '/' + item.name;
+          });
+          switch (data.action) {
+            case 'info':
+              data.formHtmlUrl = urlRoot + 'info?uid=' + id;
+              break;
+            case 'avatar':
+              data.formHtmlUrl = 'avatar-template.html';
+              break;
+            default:
+              data.formHtmlUrl = urlRoot + 'compound?uid=' + id + '&compound=' + data.action
+            ;
+          }
+      });
+    }
+
+    this.defaultAvatar = function(id) {
+      return $http.get(urlRoot + 'avatar', {
+        params: {
+          uid: id
+        }
+      });
+    }
+
+    this.deleteCompound = function(id, compound, set) {
+      return $http.post(urlRoot + 'deleteCompound', {
+        uid: id,
+        compound: compound,
+        set: set
+      });
+    }
+  }
+])
 .controller('ListCtrl', ['$scope', '$location', 'data', 'config', 'server', 
   function ($scope, $location, data, config, server) {
     angular.extend($scope, data);
-
+    
     $scope.$watch('paginator.page', function (newValue, oldValue) {
       if(newValue === oldValue) return;
       $location.search('p', newValue);
@@ -190,21 +254,39 @@
             ids.push(user.id);
         }
       });
+      if (!ids.length) $scope.$parent.alert = { status: 0, message: config.t.BATCH_CHECKED };
       return ids;
     }
 
-    $scope.markAll = function (checked) {
-      angular.forEach(this.users, function (user) {
-        user.checked = checked;
+    function handleCheckedRole(item, role) {
+      if (item.checked) {
+          if (role.front_roles) {
+            item.front_roles = role.front_roles.join(',');
+          } else {
+            item.front_roles = '';
+          }
+          if (role.admin_roles) {
+            item.admin_roles = role.admin_roles.join(',');
+          } else {
+            item.admin_roles = '';
+          }
+        item.checked = 0;
+      }
+    }
+
+    $scope.markAll = function () {
+      angular.forEach($scope.users, function (user) {
+        user.checked = $scope.allChecked;
       });
     }
 
     $scope.disableBatchAction = function () {
-      var users = $scope.users;
-      server.disable(getCheckIds()).success(function (data) {
+      var ids = getCheckIds();
+      if (!ids.length) return;
+      server.disable(ids).success(function (data) {
         if (data.status) {
           $scope.allChecked = 0;
-          angular.forEach(users, function (user) {
+          angular.forEach($scope.users, function (user) {
             if (user.checked) {
               user.time_disabled = 1;
               user.active = 0;
@@ -234,11 +316,12 @@
     }
    
     $scope.enableBatchAction = function () {
-      var users = $scope.users;
-      server.enable(getCheckIds()).success(function (data) {
+      var ids = getCheckIds();
+      if (!ids.length) return;
+      server.enable(ids).success(function (data) {
         if (data.status) {
           $scope.allChecked = 0;
-          angular.forEach(users, function (user) {
+          angular.forEach($scope.users, function (user) {
             if (user.checked) {
               user.time_disabled = 0;
               if (user.time_activated) user.active = 1;
@@ -260,7 +343,10 @@
     }
 
     $scope.activeBatchAction = function () {
-      server.active(getCheckIds()).success(function (data) {
+      var ids = getCheckIds();
+      if (!ids.length) return;
+      if (!confirm(config.t.CONFIRM_ACTIVATED_BATCH)) return;
+      server.active(ids).success(function (data) {
         if (data.status) {
           $scope.allChecked = 0;
           angular.forEach($scope.users, function (user) {
@@ -285,8 +371,10 @@
     }
 
     $scope.deleteBatchAction = function () {
+      var ids = getCheckIds();
+      if (!ids.length) return;
       if (!confirm(config.t.CONFIRMS)) return;
-      server.remove(getCheckIds()).success(function (data) {
+      server.remove(ids).success(function (data) {
         var ret = [];
         if (data.status) {
           $scope.allChecked = 0;
@@ -300,50 +388,30 @@
 
     $scope.assignRoleBacthAction = function() {
       var role = $scope.assignRole;
+      var ids = getCheckIds();
+      $scope.assignRole = '';
+      if (!ids.length) return;
       if (!role) return;
-      server.assignRole(getCheckIds(), role.name, 'add').success(function(data) {
-        $scope.assignRole = '';
+      server.assignRole(ids, role.name, 'add').success(function(data) {
         if (!data.status) return;
         $scope.allChecked = 0;
-        angular.forEach($scope.users, function (user) {
-          if (user.checked) {
-            if (role.type == 'front') {
-              if (user.front_roles) {
-                user.front_roles += ',' + role.name;
-              } else {
-                user.front_roles = role.name;
-              }
-            }
-            if (role.type == 'admin') {
-              if (user.admin_roles) {
-                user.admin_roles += ',' + role.name;
-              } else {
-                user.admin_roles = role.name;
-              } 
-            }
-            user.checked = 0;
-          }
+        angular.forEach($scope.users, function(user) {
+          handleCheckedRole(user, data.data[user.id]);
         });
       });
     }
 
     $scope.unassignRoleBacthAction = function() {
       var role = $scope.unassignRole;
+      var ids = getCheckIds();
+      $scope.unassignRole = '';
+      if (!ids.length) return;
       if (!role) return;
-      server.assignRole(getCheckIds(), role, 'remove').success(function(data) {
-        $scope.unassignRole = '';
+      server.assignRole(ids, role, 'remove').success(function(data) {
         if (!data.status) return;
         $scope.allChecked = 0;
-        angular.forEach($scope.users, function (user) {
-          if (user.checked) {
-            if (role.type == 'front' && user.front_roles) {
-              user.front_roles = user.front_roles.replace(RegExp(',?' + role.name), '');
-            }
-            if (role.type == 'admin' && user.admin_roles) {
-              user.admin_roles = user.admin_roles.replace(RegExp(',?' + role.name), '');
-            }
-            user.checked = 0;
-          }
+        angular.forEach($scope.users, function(user) {
+          handleCheckedRole(user, data.data[user.id]);
         });
       });
     }
@@ -429,6 +497,58 @@
       }
 
       $location.path('/all/search').search(filter);
+    }
+  }
+])
+.controller('EditCtrl', ['$scope', '$templateCache', 'config', 'data', 'editServer',
+  function($scope, $templateCache, config, data, editServer) {
+    angular.extend($scope, data);
+
+    $scope.navChange = function(item) {
+      $scope.action = item.name;
+    }
+
+    $scope.submit = function(name) {
+      var form = $('form[name=' + name + ']');
+      var url = $scope.formHtmlUrl;
+      $.post(url, form.serialize()).done(function(data) {
+        data = $.parseJSON(data);
+        $scope.$parent.alert = data;
+        if (angular.isUndefined(data.set)) {
+          $scope.formError = data.error;
+        } else {
+          $scope['formError' + data.set] = data.error;
+        }
+
+        $templateCache.remove(url);
+        $scope.$apply();
+      });
+    }
+
+    $scope.defaultAvatarAction = function() {
+      editServer.defaultAvatar($scope.user.id).success(function(data) {
+        if (!data.status) return;
+        $scope.avatar = data.avatar;
+      });
+    }
+
+    $scope.deleteAction = function(name) {
+      if (!confirm(config.t.COMPOUND_CONFIRM)) return;
+      var form = $('form[name=' + name + ']');
+      var widget = form.parents('.pi-widget');
+      var scope = widget.parent();
+      editServer
+        .deleteCompound($scope.user.id, $scope.action, form.find('[name=set]').val())
+        .success(function(data) {
+          if (!data.status) return;
+          $templateCache.remove($scope.formHtmlUrl);
+          widget.fadeOut(300, function() {
+            widget.remove();
+            scope.find('[name=set]').each(function(idx) {
+              $(this).val(idx);
+            });
+          });
+        });
     }
   }
 ]);

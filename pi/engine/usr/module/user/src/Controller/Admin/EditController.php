@@ -23,31 +23,49 @@ use Module\User\Form\CompoundFilter;
  */
 class EditController extends ActionController
 {
+
+    function indexAction() {
+        $uid = _get('uid');
+
+        // Check user exist
+        $isExist = Pi::api('user', 'user')->getUser($uid)->id;
+        if (!$isExist) {
+            return $this->jumpTo404(__('User was not found.'));
+        }
+
+        // Get user basic information and user data
+        $user = Pi::api('user', 'user')->get(
+            $uid,
+            array(
+                'name',
+            )
+        );
+
+        $nav = $this->getNav($uid);
+
+        return array(
+            'user'   => $user,
+            'nav'    => $nav,
+            'avatar' => Pi::user()->avatar()->get($uid, 'origin', false)
+        );
+
+    }
+
     /**
      * Edit user fields
      *
      * @return array|void
      */
-    public function indexAction()
+    public function infoAction()
     {
         $result = array(
-            'status'  => 0,
-            'message' => __('Edit user failed'),
+            'status' => 0,
+            'message' => '',
         );
-        $uid = (int) _get('uid');
+        $uid = _get('uid');
 
-        // Check user
         if (!$uid) {
-            $result['message'] = __('Invalid user id');
-            return $result;
-        }
-        $row = Pi::model('user_account')->find($uid, 'id');
-        if (!$row) {
-            $result['message'] = __('Invalid user id');
-            return $result;
-        }
-        if ($row->time_deleted) {
-            $result['message'] = __('User not exist');
+            $result['message'] = __('Edit failed: invalid uid.');
             return $result;
         }
 
@@ -61,22 +79,18 @@ class EditController extends ActionController
                 'value' => $uid,
             ),
         );
-
-        $form = new EditUserForm('base-fields', $formFields);
-        $fieldsData = Pi::api('user', 'user')->get($uid, $fields);
-        $form->setData($fieldsData);
-
+        $form = new EditUserForm('info', $formFields);
         if ($this->request->isPost()) {
             $post = $this->request->getPost();
             $form->setData($post);
-            $form->setInputFilter(new EditUserFilter($formFilters, $uid));
-            if ($form->isValid($uid)) {
+            $form->setInputFilter(new EditUserFilter($formFilters));
+            if ($form->isValid()) {
                 $values = $form->getData();
 
                 // Update user
                 $status = Pi::api('user', 'user')->updateUser($uid, $values);
                 if ($status) {
-                    $result['message'] = __('Edit user successfully');
+                    $result['message'] = __('Edit user info successfully');
                     $result['status']  = 1;
 
                     return $result;
@@ -84,20 +98,20 @@ class EditController extends ActionController
                     return $result;
                 }
             } else {
-                $result['message'] = $form->getMessages();
-
+                $result['message'] = __('Edit failed: invalid submission.');
+                $result['error'] = $form->getMessages();
                 return $result;
             }
+        } else {
+            $fieldsData = Pi::api('user', 'user')->get($uid, $fields);
+            $form->setData($fieldsData);
+            $this->view()->assign(array(
+                'form'    => $form
+            ));
+
+            $this->view()->setTemplate('edit-info');
         }
-
-        $nav = $this->getNav($uid);
-        $this->view()->assign(array(
-            'form'    => $form,
-            'nav'     => $nav,
-            'cur_nav' => 'base_info'
-        ));
-
-        $this->view()->setTemplate('edit-index');
+        
     }
 
     /**
@@ -108,24 +122,27 @@ class EditController extends ActionController
     public function compoundAction()
     {
         $result = array(
-            'status' => 0,
-            'message' => __('Edit faild'),
+            'status'  => 0,
+            'message' => '',
         );
 
         $uid      = _get('uid');
         $compound = _get('compound');
 
         if (!$uid || !$compound) {
+            $result['message'] = __('Edit failed: missing uid or compound.');
             return $result;
         }
 
         // Check uid and compound
         $row = $this->getModel('account')->find($uid, 'id');
         if (!$row) {
+            $result['message'] = __('Edit failed: user not found.');
             return $result;
         }
         $row = $this->getModel('field')->find($compound, 'name');
         if (!$row) {
+            $result['message'] = __('Edit failed: compound not exist.');
             return $result;
         }
 
@@ -196,24 +213,23 @@ class EditController extends ActionController
                 if ($status) {
                     $result['message'] = __('Update successfully');
                     $result['status']  = 1;
+                    $result['set'] = $set;
                     return $result;
                 } else {
                     return $result;
                 }
             } else {
-                $result['message'] = $forms[$set]->getMessages();
+                $result['message'] = __('Edit failed: input error.');
+                $result['error'] = $forms[$set]->getMessages();
+                $result['set'] = $set;
                 return $result;
             }
+        } else {
+            $this->view()->assign(array(
+                'forms'    => $forms,
+            ));
+            $this->view()->setTemplate('edit-compound');
         }
-
-        $nav = $this->getNav($uid);
-        $this->view()->assign(array(
-            'forms'    => $forms,
-            'nav'     => $nav,
-            'cur_nav' => $compound
-        ));
-
-        $this->view()->setTemplate('edit-compound');
     }
 
     /**
@@ -223,7 +239,7 @@ class EditController extends ActionController
      */
     public function deleteCompoundAction()
     {
-        $uid      = Pi::user()->getIdentity();
+        $uid      = _post('uid');
         $compound = _post('compound', '');
         $set      = _post('set');
 
@@ -240,7 +256,7 @@ class EditController extends ActionController
 
         return array(
             'status'  => $status ? 1 : 0,
-            'message' => $status ? 'ok' : 'error',
+            'message' => $status ? __('Delete compound successfully') : __('Delete compound fail'),
         );
     }
 
@@ -250,33 +266,24 @@ class EditController extends ActionController
     public function avatarAction()
     {
         $uid  = _get('uid');
-        $type = _get('type', '');
 
-        if (!$uid) {
-            return $this->jumpTo404('Inval user id');
-        }
-
-        if ($uid && $type == 'delete') {
-            $oldAvatar = Pi::user()->get($uid, 'avatar');
-            $adapter   = Pi::avatar()->getAdapter('upload');
-            $oldPaths  = $adapter->getMeta($uid, $oldAvatar);
-            foreach ($oldPaths as $oldPath) {
-                $oldFile = dirname($oldPath['path']) . '/' . $oldAvatar;
-                if (file_exists($oldFile)) {
-                    @unlink($oldFile);
-                }
+        $oldAvatar = Pi::user()->get($uid, 'avatar');
+        $adapter   = Pi::avatar()->getAdapter('upload');
+        $oldPaths  = $adapter->getMeta($uid, $oldAvatar);
+        foreach ($oldPaths as $oldPath) {
+            $oldFile = dirname($oldPath['path']) . '/' . $oldAvatar;
+            if (file_exists($oldFile)) {
+                @unlink($oldFile);
             }
-            // Delete user avatar
-            Pi::user()->set($uid, 'avatar', '');
-            $this->view()->assign('message', __('Delete avatar successfully'));
         }
-
-        $nav = $this->getNav($uid);
-        $this->view()->assign(array(
-            'uid'     => $uid,
-            'nav'     => $nav,
-            'cur_nav' => 'avatar'
-        ));
+        // Delete user avatar
+        Pi::user()->set($uid, 'avatar', '');
+        
+        return array(
+            'status'   => 1,
+            'message'  => __('Replace with system defalt avatar successfully'),
+            'avatar'   => Pi::user()->avatar()->get('', 'origin', false)
+        );
     }
 
     /**
@@ -317,29 +324,13 @@ class EditController extends ActionController
     protected function getNav($uid)
     {
         $result[] = array(
-            'name' => 'base_info',
-            'url'  => $this->url(
-                '',
-                array(
-                    'controller' => 'edit',
-                    'action'     => 'index',
-                    'uid'        => $uid
-                )
-            ),
+            'name' => 'info',
             'title' => __('Base info'),
         );
 
         // Avatar
         $result[] = array(
             'name' => 'avatar',
-            'url'  => $this->url(
-                '',
-                array(
-                    'controller' => 'edit',
-                    'action'     => 'avatar',
-                    'uid'        => $uid
-                )
-            ),
             'title' => __('Avatar'),
         );
 
@@ -356,15 +347,6 @@ class EditController extends ActionController
             $result[] = array(
                 'name'  => $row['name'],
                 'title' => $row['title'],
-                'url'   => $this->url(
-                    '',
-                    array(
-                        'controller' => 'edit',
-                        'action'     => 'compound',
-                        'compound'   => $row['name'],
-                        'uid'        => $uid,
-                    )
-                ),
             );
         }
 

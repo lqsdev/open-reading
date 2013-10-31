@@ -115,6 +115,29 @@ use Pi;
  *                  <...>,
  *              ),
  *          ),
+ *          <...>,
+ *
+ *          // Custom compound
+ *          <custom-field-key> => array(
+ *              // Field type, MUST be 'custom'
+ *              'type'          => 'custom',
+ *              // Field name, optional, will be set as <module>_<field-key>
+ *              // if not specified
+ *              'name'          => <specified_field_name>,
+ *              'title'         => __('Custom Compound'),
+ *
+ *              'field' => array(
+ *                  <field-key> => array(
+ *                      'title'         => __('Custom Field Item'),
+ *
+ *                      // Edit element specs
+ *                      'edit'          => 'text',
+ *                      // Filter for value processing for output
+ *                      'filter'        => <output-filter>
+ *                  ),
+ *                  <...>,
+ *              ),
+ *          ),
  *      ),
  *
  *      // Timeline
@@ -192,27 +215,25 @@ class User extends AbstractResource
             if (isset($profile['compound_field'])) {
                 $result['compound_field'] = $profile['compound_field'];
             }
-            /*
-            foreach ($config['field'] as $key => &$spec) {
-                $spec = $this->canonizeField($spec);
-            }
-            */
         }
 
         foreach (array('timeline', 'activity', 'quicklink') as $op) {
             if (isset($config[$op])) {
                 foreach ($config[$op] as $key => $spec) {
                     // Canonize field name
-                    $name = !empty($spec['name'])
-                        ? $spec['name']
-                        : $module . '_' . $key;
+                    if (!empty($spec['name'])) {
+                        $name = $spec['name'];
+                    } else {
+                        $name = $module . '_' . $key;
+                        $spec['name'] = $name;
+                    }
                     if (!isset($spec['active'])) {
                         $spec['active'] = 1;
                     }
-                    $result[$op][$name] = array_merge($spec, array(
-                        'name'      => $name,
-                        'module'    => $module,
-                    ));
+                    if (!isset($spec['module'])) {
+                        $spec['module'] = $module;
+                    }
+                    $result[$op][$name] = $spec;
                 }
             }
         }
@@ -265,7 +286,6 @@ class User extends AbstractResource
         return $profile;
     }
 
-
     /**
      * Canonize a profile field specs
      *
@@ -291,15 +311,14 @@ class User extends AbstractResource
      */
     protected function canonizeField($spec)
     {
-        if (isset($spec['field'])) {
-            $spec['type'] = 'compound';
+        if (!isset($spec['type'])) {
+            if (isset($spec['field'])) {
+                $spec['type'] = 'compound';
+            } else {
+                $spec['type'] = 'profile';
+            }
         }
-        if (!isset($spec['type'])
-            || ('user' != $this->getModule() && 'compound' != $spec['type'])
-        ) {
-            $spec['type'] = 'profile';
-        }
-        if ('compound' == $spec['type']) {
+        if ('compound' == $spec['type'] || 'custom' == $spec['type']) {
             $spec['is_edit'] = 0;
             $spec['is_display'] = 0;
             $spec['is_search'] = 0;
@@ -409,7 +428,7 @@ class User extends AbstractResource
         if (empty($this->config)) {
             return;
         }
-        Pi::registry('profile', 'user')->clear();
+        Pi::registry('profile_field', 'user')->clear();
 
         $profileFields = array();
         $config = $this->canonize($this->config);
@@ -456,7 +475,7 @@ class User extends AbstractResource
             return;
         }
         $module = $this->getModule();
-        Pi::registry('profile', 'user')->clear();
+        Pi::registry('profile_field', 'user')->clear();
 
         if ($this->skipUpgrade()) {
             return;
@@ -576,7 +595,7 @@ class User extends AbstractResource
         if (!$this->isActive() || 'user' == $module) {
             return;
         }
-        Pi::registry('profile', 'user')->clear();
+        Pi::registry('profile_field', 'user')->clear();
 
         $model = Pi::model('field', 'user');
         $fields = array();
@@ -629,7 +648,7 @@ class User extends AbstractResource
             return;
         }
         $module = $this->getModule();
-        Pi::registry('profile', 'user')->clear();
+        Pi::registry('profile_field', 'user')->clear();
 
         foreach (array('field', 'timeline', 'activity', 'quicklink')
             as $op
@@ -650,7 +669,7 @@ class User extends AbstractResource
             return;
         }
         $module = $this->getModule();
-        Pi::registry('profile', 'user')->clear();
+        Pi::registry('profile_field', 'user')->clear();
 
         foreach (array('field', 'timeline', 'activity', 'quicklink')
             as $op
@@ -671,8 +690,9 @@ class User extends AbstractResource
      */
     protected function addFields(array $fields)
     {
-        $meta = Pi::registry('profile', 'user')->read('account');
+        //$meta = Pi::registry('profile_field', 'user')->read('account');
         $table = Pi::model('profile', 'user')->getTable();
+        $meta = Pi::db()->metadata()->getColumns($table);
         $pattern = 'ALTER TABLE ' . $table . ' ADD `%s` text';
         foreach ($fields as $field) {
             if (isset($meta[$field])) {
@@ -704,8 +724,9 @@ class User extends AbstractResource
      */
     protected function dropFields(array $fields)
     {
-        $meta = Pi::registry('profile', 'user')->read('profile');
+        //$meta = Pi::registry('profile_field', 'user')->read('profile');
         $table = Pi::model('profile', 'user')->getTable();
+        $meta = Pi::db()->metadata()->getColumns($table);
         $pattern = 'ALTER TABLE ' . $table . ' DROP `%s`';
         foreach ($fields as $field) {
             if (!isset($meta[$field])) {

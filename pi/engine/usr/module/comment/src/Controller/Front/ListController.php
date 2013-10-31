@@ -12,6 +12,7 @@ namespace Module\Comment\Controller\Front;
 use Pi;
 use Pi\Mvc\Controller\ActionController;
 use Pi\Paginator\Paginator;
+use Zend\Db\Sql\Expression;
 
 /**
  * Comment list controller
@@ -45,6 +46,9 @@ class ListController extends ActionController
         );
         $renderOptions = array(
             'operation' => $this->config('display_operation'),
+            'user'      => array(
+                'avatar'    => 'medium',
+            ),
         );
         $posts = Pi::api('comment')->renderList($posts, $renderOptions);
         $count = Pi::api('comment')->getCount($where);
@@ -142,7 +146,7 @@ class ListController extends ActionController
     {
         $my = _get('my', 'int');
         if ($my) {
-            $uid    = Pi::user()->getIdentity();
+            $uid = Pi::user()->getId();
             if (!$uid) {
                 $redirect = $this->getRequest()->getRequestUri();
                 $url = Pi::service('user')->getUrl('login', $redirect);
@@ -156,7 +160,7 @@ class ListController extends ActionController
                 'admin' => false,
             );
         } else {
-            $uid        = _get('uid', 'int') ?: Pi::user()->getIdentity();
+            $uid        = _get('uid', 'int') ?: Pi::user()->getId();
             $active     = 1;
             $opOptions  = $this->config('display_operation');
         }
@@ -197,7 +201,7 @@ class ListController extends ActionController
             $navTabs = array(
                 array(
                     'active'    => null === $active,
-                    'label'     => __('All Posts'),
+                    'label'     => __('My comments'),
                     'href'      => $this->url('', array(
                         'action'    => 'user',
                         'my'        => 1,
@@ -205,7 +209,7 @@ class ListController extends ActionController
                 ),
                 array(
                     'active'    => 1 == $active,
-                    'label'     => __('Active Posts'),
+                    'label'     => __('My active comments'),
                     'href'      => $this->url('', array(
                         'action'    => 'user',
                         'my'        => 1,
@@ -214,7 +218,7 @@ class ListController extends ActionController
                 ),
                 array(
                     'active'    => 0 === $active,
-                    'label'     => __('Inactive Posts'),
+                    'label'     => __('My pending comments'),
                     'href'      => $this->url('', array(
                         'action'    => 'user',
                         'my'        => 1,
@@ -228,7 +232,7 @@ class ListController extends ActionController
 
         } else {
             $user           = Pi::service('user')->get($uid, array('name'));
-            $user['avatar'] = Pi::service('avatar')->get($uid);
+            $user['avatar'] = Pi::service('avatar')->get($uid, 'medium');
             $user['url']    = Pi::service('user')->getUrl('profile', $uid);
             $title          = __('Comment posts of user');
             $template       = 'comment-user';
@@ -278,6 +282,9 @@ class ListController extends ActionController
         );
         $renderOptions = array(
             'operation' => $this->config('display_operation'),
+            'user'      => array(
+                'avatar'    => 'medium',
+            ),
         );
         $posts = Pi::api('comment')->renderList($posts, $renderOptions);
         $count = Pi::api('comment')->getCount($where);
@@ -294,6 +301,35 @@ class ListController extends ActionController
                 'params'        => $params,
             ),
         ));
+        
+        $navTabs = array(
+            array(
+                'active'    => empty($category),
+                'label'     => __('All'),
+                'href'      => $this->url('', array(
+                    'name'      => $module,
+                    'module'    => 'list',
+                    'action'    => 'module',
+                ))
+            ),
+        );
+        $allCategory = Pi::registry('category', 'comment')->read();
+        foreach ($allCategory[$module] as $name => $row) {
+            $navTabs[] = array(
+                'active'    => $category == $name,
+                'label'     => $row['title'],
+                'href'      => $this->url('', array(
+                    'name'      => $module,
+                    'category'  => $name,
+                    'module'    => 'list',
+                    'action'    => 'module',
+                )),
+            );
+        }
+        $this->view()->assign(array(
+            'tabs'      => $navTabs,
+        ));
+            
         $title = __('Comment posts of module');
         $this->view()->assign('comment', array(
             'title'     => $title,
@@ -320,7 +356,7 @@ class ListController extends ActionController
         */
         $my = _get('my', 'int');
         if ($my) {
-            $uid    = Pi::user()->getIdentity();
+            $uid = Pi::user()->getId();
             if (!$uid) {
                 $redirect = $this->getRequest()->getRequestUri();
                 $url = Pi::service('user')->getUrl('login', $redirect);
@@ -383,6 +419,16 @@ class ListController extends ActionController
         $count = Pi::api('comment')->getTargetCount(array(
             'active'    => $active,
         ));
+        
+        $model = $this->getModel('post');
+        $select = $model->select()
+            ->where(array('root' => array_keys($targets)))
+            ->columns(array('root', 'count' => new Expression('count(*)')))
+            ->group(array('root'));
+        $rowset = $model->selectWith($select);
+        foreach ($rowset as $row) {
+            $targets[$row->root]['count'] = $row->count;
+        }
 
         //$params = (null === $active) ? array() : array('active' => $active);
         if ($my) {
@@ -404,7 +450,7 @@ class ListController extends ActionController
         if (null === $active) {
             $title = __('All commented articles');
         } else {
-            $title = __('All active commented articles');
+            $title = __('Articles with comments');
         }
         $this->view()->assign('comment', array(
             'title'     => $title,
@@ -464,7 +510,7 @@ class ListController extends ActionController
 
         } else  {
             $my     = 1;
-            $uid    = Pi::user()->getIdentity();
+            $uid    = Pi::user()->getId();
             if (!$uid) {
                 $redirect = $this->getRequest()->getRequestUri();
                 $url = Pi::service('user')->getUrl('login', $redirect);
@@ -484,7 +530,12 @@ class ListController extends ActionController
             $limit,
             $offset
         );
-        $posts = Pi::api('comment')->renderList($posts);
+        $options = array(
+            'user'  => array(
+                'avatar'    => 'medium',
+            ),
+        );
+        $posts = Pi::api('comment')->renderList($posts, $options);
         $count = Pi::api('comment')->getCount($where);
 
         if ($my) {
@@ -543,7 +594,7 @@ class ListController extends ActionController
 
         } else {
             $user           = Pi::service('user')->get($uid, array('name'));
-            $user['avatar'] = Pi::service('avatar')->get($uid);
+            $user['avatar'] = Pi::service('avatar')->get($uid, 'medium');
             $user['url']    = Pi::service('user')->getUrl('profile', $uid);
             $title          = __('Comment posts on user');
             $template       = 'comment-user-received';

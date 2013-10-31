@@ -26,8 +26,14 @@ class ProfileController extends ActionController
     
     public function fieldAction()
     {
-        $fields = Pi::registry('profile', 'user')->read();
-
+        //$fields = Pi::registry('profile_field', 'user')->read();
+        $fields = $this->getModel('field')->select(
+            array(
+                'is_display' => 1,
+                'is_edit'    => 1,
+                'active'     => 1,
+            )
+        );
         foreach ($fields as $field) {
             if ($field['type'] == 'compound') {
                 $compounds[$field['name']] = array(
@@ -76,7 +82,14 @@ class ProfileController extends ActionController
      */
     public function dressUpAction()
     {
-        $fields = Pi::registry('profile', 'user')->read();
+//        $fields = Pi::registry('profile_field', 'user')->read();
+        $fields = $this->getModel('field')->select(
+            array(
+                'is_display' => 1,
+                'is_edit'    => 1,
+                'active'     => 1,
+            )
+        );
 
         foreach ($fields as $field) {
             if ($field['is_display']) {
@@ -169,7 +182,7 @@ class ProfileController extends ActionController
                 return $result;
             }
 
-            $groupId = (int) $row['id'];d($groupId);
+            $groupId = (int) $row['id'];
             $fieldOrder = 1;
             // Save display field
             foreach ($group['fields'] as $field )  {
@@ -253,7 +266,7 @@ class ProfileController extends ActionController
 
         // Flush
         Pi::registry('compound', 'user')->flush();
-        Pi::registry('profile', 'user')->flush();
+        Pi::registry('profile_field', 'user')->flush();
 
         return $result;
 
@@ -283,19 +296,22 @@ class ProfileController extends ActionController
 
         $result = array(
             'status' => 0,
-            'message' => __('Set privacy failed')
+            'message' => ''
         );
 
         // Check post data
         if (!$id) {
+            $result['message'] = __('Set privacy failed: invalid id.');
             return $result;
         }
 
         if (!in_array($value, array(0, 1, 2, 4, 255))) {
+            $result['message'] = __('Set privacy failed: invalid value.');
             return $result;
         }
 
         if ($isForced != 0 && $isForced != 1) {
+            $result['message'] = __('Set privacy failed: invalid force flag.');
             return $result;
         }
 
@@ -314,18 +330,27 @@ class ProfileController extends ActionController
         try {
             $row->save();
         } catch (\Exception $e) {
+            $result['message'] = __('Set privacy failed: update error.');
             return $result;
         }
 
         // Set user privacy field
+        $userPrivacyModel = $this->getModel('privacy_user');
         if (!$isForced) {
             $currentPrivacyValue = $row->value;
-            $userPrivacyModel    = $this->getModel('privacy_user');
             $userPrivacyModel->update(
-                array('value' => $currentPrivacyValue),
+                array(
+                    'value'     => $currentPrivacyValue,
+                    'is_forced' => 0,
+                ),
                 array(
                     'field' => $row->field,
                 )
+            );
+        } else {
+            $userPrivacyModel->update(
+                array('is_forced' => 1),
+                array('field' => $row->field)
             );
         }
 
@@ -343,13 +368,12 @@ class ProfileController extends ActionController
      */
     protected function getGroupDisplay()
     {
-        $profileMeta = Pi::registry('profile', 'user')->read();
+        $profileMeta = Pi::registry('profile_field', 'user')->read();
         $result      = array();
         $groupModel  = $this->getModel('display_group');
         $select      = $groupModel->select()->where(array());
         $select->order('order');
         $rowset = $groupModel->selectWith($select);
-
 
         foreach ($rowset as $row) {
             $result[$row['id']] = array(

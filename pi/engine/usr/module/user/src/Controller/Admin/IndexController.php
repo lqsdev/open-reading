@@ -42,7 +42,7 @@ class IndexController extends ActionController
     public function allAction()
     {
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $condition['active']        = _get('active') ?: '';
@@ -65,7 +65,7 @@ class IndexController extends ActionController
         // Set paginator
         $paginator = array(
             'count'      => (int) $count,
-            'limit'      => $limit,
+            'limit'      => (int) $limit,
             'page'       => $page,
         );
 
@@ -85,7 +85,7 @@ class IndexController extends ActionController
     public function activatedAction()
     {
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $condition['activated']     = 'activated';
@@ -110,7 +110,7 @@ class IndexController extends ActionController
         // Set paginator
         $paginator = array(
             'count'      => (int) $count,
-            'limit'      => $limit,
+            'limit'      => (int) $limit,
             'page'       => $page,
         );
 
@@ -130,16 +130,16 @@ class IndexController extends ActionController
     public function pendingAction()
     {
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
-        $condition['activated']       = 'pending';
+        $condition['activated']     = 'pending';
         $condition['enable']        = _get('enable') ?: '';
         $condition['front_role']    = _get('front_role') ?: '';
         $condition['admin_role']    = _get('admin_role') ?: '';
         $condition['register_date'] = _get('register_date') ?: '';
         $condition['search']        = _get('search') ?: '';
-        $condition['name']      = _get('name') ?: '';
+        $condition['name']          = _get('name') ?: '';
         $condition['email']         = _get('email') ?: '';
 
         // Get user ids
@@ -154,7 +154,7 @@ class IndexController extends ActionController
         // Set paginator
         $paginator = array(
             'count'      => (int) $count,
-            'limit'      => $limit,
+            'limit'      => (int) $limit,
             'page'       => $page,
         );
 
@@ -197,8 +197,8 @@ class IndexController extends ActionController
             Predicate\PredicateSet::OP_OR
         );
         $rowset = Pi::model('user_account')->selectWith($select)->toArray();
-        if (count($rowset) != 0 || empty($roles)) {
-            $result['message'] = __('Add user failed');
+        if (count($rowset) != 0) {
+            $result['message'] = __('Add user failed: user already exists.');
             return $result;
         }
 
@@ -210,9 +210,9 @@ class IndexController extends ActionController
         );
 
         // Add user
-        $uid = Pi::api('user', 'user')->addUser($data, false);
+        $uid = Pi::api('user', 'user')->addUser($data);
         if (!$uid) {
-            $result['message'] = __('Add user failed');
+            $result['message'] = __('Add user failed: invalid operation.');
             return $result;
         }
 
@@ -224,6 +224,8 @@ class IndexController extends ActionController
         // Enable
         if ($enable == 1) {
             Pi::api('user', 'user')->enableUser($uid);
+        } else {
+            Pi::api('user', 'user')->disableUser($uid);
         }
 
         // Set role
@@ -318,7 +320,7 @@ class IndexController extends ActionController
         }
 
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         // Get user ids
@@ -332,8 +334,8 @@ class IndexController extends ActionController
 
         // Set paginator
         $paginator = array(
-            'count'      => $count,
-            'limit'      => $limit,
+            'count'      => (int) $count,
+            'limit'      => (int) $limit,
             'page'       => $page,
         );
 
@@ -348,101 +350,21 @@ class IndexController extends ActionController
     }
 
     /**
-     * Search user info buy display name
-     *
-     * @return array
-     */
-    public function searchUserAction()
-    {
-        $name = _get('name');
-        $result = array();
-
-        if (!$name) {
-            return $result;
-        }
-
-        // Check name
-        $rowset = $this->getModel('account')->find($name, 'name');
-        $model = $this->getModel('account');
-        $where = array(
-            'name' => $name,
-            'time_deleted' => 0,
-        );
-        $select = $model->select()->where($where);
-        $rowset = $model->selectWith($select)->current();
-
-        if (!$rowset) {
-            return $result;
-        } else {
-            $uid = $rowset->id;
-        }
-
-        // Get fields
-        $where = array(
-            'active'     => 1,
-            'is_display' => 1,
-        );
-        $rowset = $this->getModel('field')->select($where);
-        foreach ($rowset as $row) {
-            $columns[] = $row['name'];
-        }
-
-        $fieldMeta = Pi::api('user', 'user')->getMeta('', 'display');
-        $data = Pi::api('user', 'user')->get($uid, $columns);
-        if (isset($data['id'])) {
-            unset($data['id']);
-        }
-
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                // Compound
-                // Get compound meta
-                $compoundMeta = Pi::registry('compound', 'user')->read($key);
-                $result[$key] = array(
-                    'title' => $fieldMeta[$key]['title'],
-                );
-
-
-                foreach ($value as $items) {
-                    foreach ($items as $col => $val) {
-                        $compoundItems[] = array(
-                            'title' => $compoundMeta[$col]['title'],
-                            'value' => $val,
-                        );
-                    }
-                    $result[$key]['items'][] = $compoundItems;
-                }
-            } else {
-                $result[$key] = array(
-                    'title' => $fieldMeta[$key]['title'] ? : ucfirst($key),
-                    'value' => $value,
-                );
-            }
-        }
-
-        $result = array_values($result);
-
-        return $result;
-
-    }
-
-    /**
      * Enable users
      *
      * @return array
      */
     public function enableAction()
     {
-        $return = array(
+        $result = array(
             'status'  => 0,
             'message' => '',
         );
 
         $uids = _post('ids', '');
-
         if (!$uids) {
-            $return['message'] = __('Enable user failed');
-            return $return;
+            $result['message'] = __('Enable user failed: invalid uid');
+            return $result;
         }
 
         $uids  = explode(',', $uids);
@@ -453,10 +375,13 @@ class IndexController extends ActionController
                 $count++;
             }
         }
-        $return['status'] = 1;
-        $return['message'] = sprintf(__('%d enable user successfully'), $count);
 
-        return $return;
+        $usersStatus = $this->getUserStatus($uids);
+        $result['users_status'] = $usersStatus;
+        $result['status']  = 1;
+        $result['message'] = sprintf(__('%d enable user successfully'), $count);
+
+        return $result;
 
     }
 
@@ -467,15 +392,15 @@ class IndexController extends ActionController
      */
     public function disableAction()
     {
-        $return = array(
+        $result = array(
             'status'  => 0,
             'message' => ''
         );
         $uids = _post('ids', '');
 
         if (!$uids) {
-            $return['message'] = __('Disable user failed');
-            return $return;
+            $result['message'] = __('Disable user failed: invalid uid');
+            return $result;
         }
 
         $uids  = explode(',', $uids);
@@ -486,10 +411,13 @@ class IndexController extends ActionController
                 $count++;
             }
         }
-        $return['status']  = 1;
-        $return['message'] = sprintf(__('%d disable user successfully'), $count);
 
-        return $return;
+        $usersStatus = $this->getUserStatus($uids);
+        $result['users_status'] = $usersStatus;
+        $result['status']  = 1;
+        $result['message'] = sprintf(__('%d disable user successfully'), $count);
+
+        return $result;
 
     }
 
@@ -501,14 +429,14 @@ class IndexController extends ActionController
     public function deleteUserAction()
     {
         $uids   = _post('ids');
-        $return = array(
+        $result = array(
             'status'  => 0,
             'message' => '',
         );
 
         if (!$uids) {
-            $return['message'] = __('Delete user failed');
-            return $return;
+            $result['message'] = __('Delete user failed: invalid uid');
+            return $result;
         }
 
         $uids  = explode(',', $uids);
@@ -518,11 +446,16 @@ class IndexController extends ActionController
             if ($status) {
                 $count++;
             }
-        }
-        $return['status']  = 1;
-        $return['message'] = sprintf(__('%d delete user successfully'), $count);
 
-        return $return;
+            // Clear user other info
+
+
+
+        }
+        $result['status']  = 1;
+        $result['message'] = sprintf(__('%d delete user successfully'), $count);
+
+        return $result;
 
     }
 
@@ -532,7 +465,7 @@ class IndexController extends ActionController
      */
     public function activateUserAction()
     {
-        $uids = _post('ids');
+        $uids = _post('ids');$uids = '2,3,4,5';
 
         $result = array(
             'status'  => 0,
@@ -540,13 +473,13 @@ class IndexController extends ActionController
         );
 
         if (!$uids) {
-            $result['message'] = __('Activate user failed');
+            $result['message'] = __('Activate user failed: invalid uid');
             return $result;
         }
 
         $uids = array_unique(explode(',', $uids));
         if (empty($uids)) {
-            $result['message'] = __('Activate user failed');
+            $result['message'] = __('Activate user failed: invalid uid');
             return $result;
         }
 
@@ -557,10 +490,13 @@ class IndexController extends ActionController
                 $count++;
             }
         }
-        $return['status']  = 1;
-        $return['message'] = sprintf(__('%d activated user successfully'), $count);
 
-        return $return;
+        $usersStatus = $this->getUserStatus($uids);
+        $result['users_status'] = $usersStatus;
+        $result['status']  = 1;
+        $result['message'] = sprintf(__('%d activated user successfully'), $count);
+
+        return $result;
 
     }
 
@@ -581,19 +517,25 @@ class IndexController extends ActionController
             'message' => '',
         );
 
+        $result = array(
+            'status'    => 0,
+            'data'      => array(),
+            'message'   => '',
+        );
+
         if (!$uids || !$type || !$role) {
-            $result['message'] = __('Assign role failed');
+            $result['message'] = __('Assign role failed: invalid parameters.');
             return $result;
         }
 
         $uids = array_unique(explode(',', $uids));
         if (!$uids) {
-            $result['message'] = __('Assign role failed');
+            $result['message'] = __('Assign role failed: invalid user ids.');
             return $result;
         }
 
         if (!in_array($type, array('add', 'remove'))) {
-            $result['message'] = __('Assign role failed');
+            $result['message'] = __('Assign role failed: invalid operation.');
             return $result;
         }
 
@@ -602,7 +544,7 @@ class IndexController extends ActionController
             foreach ($uids as $uid) {
                 $status = Pi::api('user', 'user')->setRole($uid, $role);
                 if (!$status) {
-                    $result['message'] = __('Assign role failed');
+                    $result['message'] = __('Assign role failed.');
                     return $result;
                 }
             }
@@ -619,6 +561,12 @@ class IndexController extends ActionController
             }
         }
 
+        $users = array();
+        array_walk($uids, function ($uid) use (&$users) {
+            $users[$uid] = array('id' => $uid);
+        });
+        $data = $this->renderRole($users);
+        $result['data'] = $data;
         $result['status']  = 1;
         $result['message'] = __('Assign role successfully');
 
@@ -629,7 +577,8 @@ class IndexController extends ActionController
     /**
      * Get user information
      *
-     * @param int[] $ids
+     * @param int[] $uids
+     *
      * @return array
      */
     protected function getUser($uids)
@@ -651,30 +600,27 @@ class IndexController extends ActionController
             'id'             => '',
         );
 
-        // Get user data
-        $data = Pi::api('user', 'user')->get(
+        $noSortUser = Pi::api('user', 'user')->get(
             $uids,
             array_keys($columns)
         );
+
         foreach ($uids as $uid) {
-            $users[$uid] = $data[$uid];
+            $users[] = $noSortUser[$uid];
         }
-
-        $rowset = Pi::model('user_role')->select(array('uid' => $uids));
-        foreach ($rowset as $row) {
-            $uid     = $row['uid'];
-            $section = $row['section'];
-            $roleKey = $section . '_roles';
-            $users[$uid][$roleKey][] = $row['role'];
-        }
-
-        foreach ($users as &$user) {
+        array_walk($users, function (&$user) {
+            $user['link'] = Pi::service('user')->getUrl('home', array(
+                'id'    => (int) $user['id'],
+            ));
             $user['active']         = (int) $user['active'];
-            $user['time_disabled']  = (int) $user['time_disabled'];
-            $user['time_activated'] = (int) $user['time_activated'];
-            $user['time_created']   = (int) $user['time_created'];
-            $user = array_merge($columns, $user);
-        }
+            $user['time_disabled']  = $user['time_disabled']
+                ? _date($user['time_disabled']) : 0;
+            $user['time_activated']  = $user['time_activated']
+                ? _date($user['time_activated']) : 0;
+            $user['time_created']  = $user['time_created']
+                ? _date($user['time_created']) : 0;
+        });
+        $users = $this->renderRole($users);
 
         return $users;
 
@@ -823,7 +769,7 @@ class IndexController extends ActionController
             );
         }
 
-        $select->order('account.time_created DESC');
+        $select->order('account.id DESC');
         if ($limit) {
             $select->limit($limit);
         }
@@ -1012,6 +958,9 @@ class IndexController extends ActionController
         $roles = Pi::registry('role')->read();
         $data  = array();
         foreach ($roles as $name => $role) {
+            if ('guest' == $name || 'member' == $name) {
+                continue;
+            }
             $data[] = array(
                 'name'  => $name,
                 'title' => $role['title'],
@@ -1079,6 +1028,65 @@ class IndexController extends ActionController
         }
 
         return $time;
+
+    }
+
+    /**
+     * Render roles for users
+     */
+    protected function renderRole(array $users)
+    {
+        foreach ($users as $key => $user) {
+            $uids[] = $user['id'];
+        }
+        $roleList = array();
+        $roles = Pi::registry('role')->read();
+        $rowset = Pi::model('user_role')->select(array('uid' => $uids));
+        foreach ($rowset as $row) {
+            $uid     = $row['uid'];
+            $section = $row['section'];
+            $roleKey = $section . '_roles';
+            $roleList[$uid][$roleKey][] = $roles[$row['role']]['title'];
+        }
+        array_walk($users, function (&$user) use ($roleList) {
+            $uid = $user['id'];
+            if (isset($roleList[$uid]['front_roles'])) {
+                $user['front_roles'] = $roleList[$uid]['front_roles'];
+            }
+            if (isset($roleList[$uid]['admin_roles'])) {
+                $user['admin_roles'] = $roleList[$uid]['admin_roles'];
+            }
+        });
+
+        return $users;
+    }
+
+    /**
+     * Get users status: active, activated, disable
+     *
+     * @param $uids
+     * @return array
+     */
+    protected function getUserStatus($uids)
+    {
+        $uids  = (array) $uids;
+        $users = Pi::api('user', 'user')->get(
+            $uids,
+            array(
+                'active','time_activated', 'time_disabled'
+            )
+        );
+
+        $usersStatus = array();
+        foreach ($users as $user) {
+            $usersStatus[$user['id']] = array(
+                'active'    => (int) $user['active'],
+                'activated' => $user['time_activated'] ? 1 : 0,
+                'disabled'  => $user['time_disabled'] ? 1 : 0,
+            );
+        }
+
+        return $usersStatus;
 
     }
 }

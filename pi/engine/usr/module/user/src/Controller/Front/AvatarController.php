@@ -89,7 +89,7 @@ class AvatarController extends ActionController
      */
     public function indexAction()
     {
-        $uid = Pi::user()->getIdentity();
+        $uid = Pi::user()->getId();
         if (empty($uid)) {
             return $this->jumpToDenied();
         }
@@ -204,6 +204,7 @@ class AvatarController extends ActionController
 
         // Get side nav items
         $groups = Pi::api('user', 'group')->getList();
+        $user = Pi::api('user', 'user')->get($uid, array('uid', 'name'));
         
         $this->view()->assign(array(
             'title'    => __('Avatar Settings'),
@@ -217,6 +218,7 @@ class AvatarController extends ActionController
             'local'    => $local,
             'groups'   => $groups,
             'uid'      => $uid,
+            'user'     => $user,
         ));
     }
     
@@ -405,7 +407,7 @@ class AvatarController extends ActionController
             exit;
         }
         
-        $uid     = Pi::user()->getIdentity();
+        $uid     = Pi::user()->getId();
         $adapter = Pi::avatar()->getAdapter($source);
         
         if ('upload' == $source) {

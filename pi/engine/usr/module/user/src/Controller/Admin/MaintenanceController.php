@@ -48,14 +48,11 @@ class MaintenanceController extends ActionController
     public function logAction()
     {
         $uid = _get('uid');
-        if (!$uid) {
-            return $this->jumpTo404('Invalid uid');
-        }
 
         // Check user exist
         $isExist = Pi::api('user', 'user')->getUser($uid)->id;
         if (!$isExist) {
-            return $this->jumpTo404('Invalid uid');
+            return $this->jumpTo404(__('User was not found.'));
         }
 
         // Get user basic information and user data
@@ -73,14 +70,17 @@ class MaintenanceController extends ActionController
             )
         );
 
+        // Time to string
+        $user['time_disabled']  = _date($user['time_disabled']);
+        $user['time_activated'] = _date($user['time_activated']);
+        $user['time_created']   = _date($user['time_created']);
+
         // Get user data
         $user['time_last_login'] = Pi::user()->data()->get($uid, 'time_last_login');
         $user['ip_login']        = Pi::user()->data()->get($uid, 'ip_login');
         $user['login_times']     = Pi::user()->data()->get($uid, 'login_times');
 
-        $this->view()->assign(array(
-            'user' => $user,
-        ));
+        return $user;
     }
 
     /**
@@ -97,7 +97,7 @@ class MaintenanceController extends ActionController
         $sort = _get('sort') ?: 'time_created';
 
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $uids   = $this->getUids($sort, $limit, $offset);
@@ -126,7 +126,7 @@ class MaintenanceController extends ActionController
     public function deletedListAction()
     {
         $page   = (int) $this->params('p', 1);
-        $limit  = 10;
+        $limit  = Pi::service('module')->config('list_limit', 'user');
         $offset = (int) ($page -1) * $limit;
 
         $model  = Pi::model('user_account');
@@ -149,12 +149,20 @@ class MaintenanceController extends ActionController
         $select->offset($offset);
         $rowset = $model->selectWith($select);
         foreach ($rowset as $row) {
-            $users[] = $row->toArray();
+            $users[] = array(
+                'identity'       => $row->identity,
+                'name'           => $row->name,
+                'email'          => $row->email,
+                'time_activated' => _date($row->time_activated),
+                'time_created'   => _date($row->time_created),
+                'time_deleted'   => _date($row->time_deleted),
+            );
         }
 
         // Get count
         $select = $model->select()->where(array('time_deleted > ?' => 0));
         $select->columns(array('count' => new Expression('count(*)')));
+        $select->order('time_deleted DESC');
         $rowset = $model->selectWith($select);
         if ($rowset) {
             $rowset = $rowset->current();
