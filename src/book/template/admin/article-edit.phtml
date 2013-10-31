@@ -1,13 +1,26 @@
 <?php
     $this->jQuery('extension/fileupload-min.js');
-    $this->bootstrap(array(
-        'js/bootstrap.min.js'
-    ));
+    $this->bootstrap(array('js/bootstrap.min.js'));
     $this->css($this->assetModule('script/article-front-admin.css'));
     $this->Backbone();
 ?>
 
-
+<div class="widget" id="jsGallery">
+    <div class="widget-header" style="cursor: pointer;" title="<?php _e('Click toggle show'); ?>">
+        <i class="icon-caret-up"></i>
+        <i class="icon-caret-down"></i>
+        <strong><?php _e('Image gallery'); ?></strong>
+    </div>
+    <div class="widget-body" style="padding-right: 0;">
+        <span class="btn fileinput-button" data-toggle="modal" href="#multi-gallery-box">
+            <?php _e('Upload') ?>
+        </span>
+        <div class="clearfix gallery-list">
+        </div>
+    </div>
+    <!-- Starting gallery modal box -->
+    <?php include 'media-gallery-box.phtml' ?>
+</div>
 
 <?php echo $this->form()->openTag($form) ?>
 <div>
@@ -29,6 +42,10 @@
 <?php 
     $element = $form->get('id');
     echo $this->formElement($element);
+    $element = $form->get('bid');
+    echo $this->formElement($element);
+    $element = $form->get('cdid');
+    echo $this->formElement($element);
     $element = $form->get('fake_id');
     echo $this->formElement($element);
 ?>
@@ -41,41 +58,6 @@
     </div>
 </div>
 <?php echo $this->form()->closeTag() ?>
-
-<div class="widget" id="jsUpload">
-    <div class="widget-header">
-        <strong><?php _e('Feature image') ?></strong>
-    </div>
-    <div class="clearfix widget-body">
-        <div class="upload-image-wrap" style="cursor: default; width: <?php echo $thumbWidth . 'px' ?>; height: <?php echo $thumbHeight . 'px' ?>;">
-        </div>
-        <div class="pull-left" style="margin-top: 20px;">
-            <button class="btn upload fileinput-button" data-toggle="modal" href="#upload-box">
-                <?php _e('Upload') ?>
-            </button>
-            <span class="muted"><?php echo _e('image size '). $width . '*' . $height; ?></span>
-        </div>
-        <!-- Start modal box -->
-        <?php include 'media-image-box.phtml' ?>
-    </div>
-</div>
-
-<div class="widget" id="jsGallery">
-    <div class="widget-header" style="cursor: pointer;" title="<?php _e('Click toggle show'); ?>">
-        <i class="icon-caret-up"></i>
-        <i class="icon-caret-down"></i>
-        <strong><?php _e('Image gallery'); ?></strong>
-    </div>
-    <div class="widget-body" style="padding-right: 0;">
-        <span class="btn fileinput-button" data-toggle="modal" href="#multi-gallery-box">
-            <?php _e('Upload') ?>
-        </span>
-        <div class="clearfix gallery-list">
-        </div>
-    </div>
-    <!-- Starting gallery modal box -->
-    <?php include 'media-gallery-box.phtml' ?>
-</div>
 
 <!-- Template for gallery -->
 <div id="jsUploadModel" class="modal hide">

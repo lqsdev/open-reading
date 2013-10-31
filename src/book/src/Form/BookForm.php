@@ -8,37 +8,10 @@
 namespace Module\Book\Form;
 
 use Pi\Form\Form as BaseForm;
-use Pi;
 
-class ArticleForm extends BaseForm {
+class BookForm extends BaseForm {
 
     public function init() {
-        $this->add(array(
-            'name' => 'title',
-            'options' => array(
-                'label' => __('Title'),
-            ),
-            'attributes' => array(
-                'type' => 'text',
-                'placeholder' => __('Title'),
-            ),
-        ));
-
-        $editorConfig = Pi::config()->load("module.article.ckeditor.php");
-       
-        $editorConfig['editor'] = 'html';
-        $editorConfig['set'] = '';
-        
-        $this->add(array(
-            'name' => 'content',
-            'attributes' => array(
-                'type' => 'editor',              
-                
-            ),
-            'options' => $editorConfig,
-           
-        ));
-        
         $this->add(array(
             'name' => 'id',
             'attributes' => array(
@@ -47,16 +20,24 @@ class ArticleForm extends BaseForm {
         ));
         
         $this->add(array(
-            'name' => 'bid',
+            'name' => 'title',
+            'options' => array(
+                'label' => __('Book Title'),
+            ),
             'attributes' => array(
-                'type' => 'hidden',              
+                'type' => 'text',
+                'placeholder' => __('Title'),
             ),
         ));
-        
+
         $this->add(array(
-            'name' => 'cdid',
+            'name' => 'introduction',
+            'options' => array(
+                'label' => __('Introduction'),
+            ),
             'attributes' => array(
-                'type' => 'hidden',              
+                'type' => 'textarea',
+                'placeholder' => __('Introduction'),
             ),
         ));
         

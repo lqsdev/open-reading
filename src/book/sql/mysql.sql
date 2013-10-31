@@ -1,37 +1,17 @@
-CREATE TABLE `{asset}` (
-  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
-  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
-  `article`         int(10) UNSIGNED      NOT NULL DEFAULT 0,
-  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
-
-  PRIMARY KEY                   (`id`),
-  UNIQUE KEY `media_article`    (`media`, `article`),
-  KEY `article_type`            (`article`, `type`),
-  KEY `media`                   (`media`)
-);
-
-CREATE TABLE `{asset_draft}` (
-  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
-  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
-  `draft`           varchar(255)          NOT NULL DEFAULT '',
-  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
-
-  PRIMARY KEY                   (`id`),
-  KEY `draft_type`              (`draft`, `type`)
-);
-
 CREATE TABLE `{book}` (
   `id`              int(10) unsigned                NOT NULL AUTO_INCREMENT,
   `title`           varchar(255)                    NOT NULL,     
   `cover_url`       varchar(255)                    NULL, 
   `introduction`    text                            NULL,
   `catalogue_id`    int(10) unsigned                NULL,
+
   PRIMARY KEY       (`id`) 
 );
 
 CREATE TABLE `{catalogue}` (
   `id`              int(10) unsigned                NOT NULL AUTO_INCREMENT,
   `data`            text                            NULL,
+
  PRIMARY KEY        (`id`)
 );
 
@@ -40,6 +20,7 @@ CREATE TABLE `{catalogue_rel_article}` (
   `book_id`         int(10) unsigned               NOT NULL,
   `cata_data_id`    int(10) unsigned               NOT NULL,
   `article_id`      int(10) unsigned               NOT NULL,
+
  PRIMARY KEY        (`id`)
 );
 
@@ -48,9 +29,10 @@ CREATE TABLE `{article}` (
   `title`           varchar(255)                    NOT NULL,     
   `content`         text                            NULL, 
   `meta_type`       varchar(32)                     NULL,
-  `image`           varchar(255)                    NOT NULL DEFAULT '',
+
   PRIMARY KEY       (`id`)
 );
+
 CREATE TABLE `{media}` (
   `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
   `name`            varchar(64)           NOT NULL DEFAULT '',
@@ -79,3 +61,24 @@ CREATE TABLE `{media_statistics}` (
   UNIQUE KEY `media`    (`media`)
 );
 
+CREATE TABLE `{asset}` (
+  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
+  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `article`         int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
+
+  PRIMARY KEY                   (`id`),
+  UNIQUE KEY `media_article`    (`media`, `article`),
+  KEY `article_type`            (`article`, `type`),
+  KEY `media`                   (`media`)
+);
+
+CREATE TABLE `{asset_draft}` (
+  `id`              int(10) UNSIGNED      NOT NULL AUTO_INCREMENT,
+  `media`           int(10) UNSIGNED      NOT NULL DEFAULT 0,
+  `draft`           varchar(255)          NOT NULL DEFAULT '',
+  `type`            enum('attachment', 'image') NOT NULL DEFAULT 'attachment',
+
+  PRIMARY KEY                   (`id`),
+  KEY `draft_type`              (`draft`, `type`)
+);

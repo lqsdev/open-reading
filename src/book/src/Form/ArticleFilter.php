@@ -37,6 +37,26 @@ class ArticleFilter extends InputFilter
         ));
         
         $this->add(array(
+            'name'      => 'bid',
+            'required'  => false,
+            'filters'   => array(
+                array(
+                    'name'  => 'int',
+                ),
+            ),
+        ));
+        
+        $this->add(array(
+            'name'      => 'cdid',
+            'required'  => false,
+            'filters'   => array(
+                array(
+                    'name'  => 'int',
+                ),
+            ),
+        ));
+        
+        $this->add(array(
             'name'      => 'fake_id',
             'required'  => false,
             'filters'   => array(

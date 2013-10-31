@@ -3,11 +3,13 @@
 </div>
 <left>
 <div>
+    <strong>
     <?php
     $url = $this->url('',array('controller' => 'article', 'action' => 'edit', 'bid' => $bid, 'cdid' => $cdid));
     $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add New Article'), __('Add New Article'));
     echo $link;
     ?>
+    </strong>
 </div>
 </left>
 <table class="table-striped table-condensed">

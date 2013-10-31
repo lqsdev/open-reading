@@ -46,8 +46,17 @@ class ArticleController extends ActionController
     
     public function editAction()
     {
+        $id   = $this->params('id');
+        $bid  = $this->params('bid');
+        $cdid = $this->params('cdid');
+
         $form = new ArticleForm('article');        
         $form->setAttribute('action', $this->url('', array('action' => 'edit')));
+        $form->setData(array(
+            'id' => $id,
+            'bid' => $bid,
+            'cdid' => $cdid,
+        ));
         $this->view()->assign('form', $form);
         
         $configs = Pi::service('module')->config('', $this->getModule());
@@ -64,15 +73,76 @@ class ArticleController extends ActionController
                 return;
             }
             $data = $form->getData();
+            
             $inputData = array(
                 'title'   => $data['title'],
                 'content' => $data['content'],
-                );
-            $row = $this->getModel('article')->createRow($inputData);
-            $row->save();
-            
+            );
+            if (empty($data['id'])) {
+                $row = $this->getModel('article')->createRow($inputData);
+                $row->save();
+                $cataRow = $this->getModel('catalogue_rel_article')->createRow(
+                        array(
+                            'book_id' => $data['bid'],
+                            'cata_data_id' => $data['cdid'],
+                            'article_id' => $row->id,
+                        ));
+                $cataRow->save();
+            } else {
+                $row = $this->getModel('article')->find($data['id']);
+                $row->assign($inputData);
+                $row->save();
+            }
             $this->submit($data['fake_id'], $row->id);
+        } else {
+            $images = array();
+            //var_dump($id);
+            $resultsetDraftAsset = $this->getModel('asset')->select(array('article' => $id,))->toArray();
+            // Getting media ID
+            $mediaIds = array(0);
+            foreach ($resultsetDraftAsset as $asset) {
+                $mediaIds[] = $asset['media'];
+            }
+            //var_dump($mediaIds);
+            // Getting media details
+            $resultsetMedia = $this->getModel('media')->select(array('id' => $mediaIds));
+            $medias = array();
+            foreach ($resultsetMedia as $media) {
+                $medias[$media->id] = $media->toArray();
+            }
+            // var_dump($medias);die;
+            // Getting assets
+            foreach ($resultsetDraftAsset as $asset) {
+                $media = $medias[$asset['media']];
+                $imageSize = getimagesize(Pi::path($media['url']));
+                $images[] = array(
+                    'id' => $asset['id'],
+                    'title' => $media['title'],
+                    'size' => $media['size'],
+                    'w' => $imageSize['0'],
+                    'h' => $imageSize['1'],
+                    'downloadUrl' => $this->url(
+                            '', array(
+                        'controller' => 'media',
+                        'action' => 'download',
+                        'id' => $media['id'],
+                            )
+                    ),
+                    'preview_url' => Pi::url($media['url']),
+                    'thumb_url' => Pi::url(Service::getThumbFromOriginal($media['url'])),
+                );
+            }
+            $row = $this->getModel('article')->find($id);
+            //$this->setModuleConfig();
+            $form->setData(array(
+                'id' => $id,
+                'bid' => $bid,
+                'cdid' => $cdid,
+                'title' => $row['title'],
+                'content' => $row['content'],
+            ));
         }
+         $this->view()->assign('images', $images);
         $this->view()->setTemplate('article-edit');
     }
     
@@ -336,3 +406,4 @@ class ArticleController extends ActionController
         exit();
     }
 }
+

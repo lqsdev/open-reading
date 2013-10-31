@@ -1,6 +1,16 @@
 <div class="page-header">
     <h2>Book List</h2>
 </div>
+<div>
+    <strong>
+    <?php
+    $url = $this->url('',array('controller' => 'book', 'action' => 'edit'));
+    $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Add New Book'), __('Add New Book'));
+    echo $link;
+    ?>
+    </strong>
+</div>
+
 <table class="table-striped table-condensed">
     <tr>
         <th class="span6"><?php echo __('Book Title'); ?></th>
@@ -16,6 +26,11 @@
         </td>
         <td>
             <center>
+            <?php
+            $url = $this->url('', array('controller' => 'book', 'action' => 'edit', 'id' => $book['id']));
+            $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Book'), '<i class="icon-edit"></i>');
+            echo $link;
+            ?>
             <?php
             $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $book['id']));
             $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), '<i class="icon-th-list"></i>');
