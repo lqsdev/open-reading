@@ -8,7 +8,7 @@ foreach ($books as $book) {
         <div class="row">
             <?php
             $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'view', 'id' => $book['id'])));
-            $image = $this->assetModule($book['cover_url']);
+            $image = Pi::url($book['cover_url']);
             $link = sprintf('<a href="%s" title="%s"><img src="%s" ></a>', $url, __('View This Book'), $image);
             echo $link;
             ?>
