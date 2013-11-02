@@ -26,12 +26,12 @@ return array(
                 'controller'    => 'book',
                 'action'        => 'list',
             ),
-            'article'             => array(
-                'label'         => _t('Artilce'),
-                'route'         => 'admin',
-                'controller'    => 'article',
-                'action'        => 'edit',
-            ),
+//            'article'             => array(
+//                'label'         => _t('Artilce'),
+//                'route'         => 'admin',
+//                'controller'    => 'article',
+//                'action'        => 'list',
+//            ),
              'media'             => array(
                 'label'         => _t('Media'),
                 'route'         => 'admin',

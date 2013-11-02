@@ -22,8 +22,8 @@ class CatalogueController extends ActionController
     {   
         $bid = $this->params('bid');
 
-        $row = $this->getModel('book')->find($bid);
-        $cid = $row['catalogue_id'];
+        $rowBook = $this->getModel('book')->find($bid);
+        $cid = $rowBook['catalogue_id'];
 
         $row = $this->getModel('catalogue')->find($cid);
         $pageList = $row == null ?  '' : json_decode($row['data']);

@@ -33,9 +33,11 @@
 
 <div>
 <?php $element = $form->get('content'); ?>    
-    <div><?php
+    <div>
+        <?php
         echo $this->formRow($element);
-        echo $this->formElementErrors($element); ?>
+        echo $this->formElementErrors($element);
+        ?>
     </div>
 </div>
 
@@ -50,7 +52,7 @@
     echo $this->formElement($element);
 ?>
 
-<div >
+<div>
 <?php $element = $form->get('submit'); ?>   
     <div><?php
         echo $this->formRow($element);
@@ -58,7 +60,24 @@
     </div>
 </div>
 <?php echo $this->form()->closeTag() ?>
-
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $form->get('bid')->getValue()));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit-item', 'bid' => $form->get('bid')->getValue(), 'cdid' => $form->get('cdid')->getValue()));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue Item'), __('Edit Catalogue Item'));
+        echo $link;
+        ?>
+    </strong>
+</div>
 <!-- Template for gallery -->
 <div id="jsUploadModel" class="modal hide">
 </div>    
@@ -573,7 +592,8 @@ var GalleryListView = Backbone.View.extend({
             var url = '<?php echo $this->url('admin', array(
                 'controller' => 'article',
                 'action'     => 'remove-asset',
-            )) ?>' + 'id/' + id;
+                'fake_id'    => $form->get('fake_id')->getValue(),
+            )) ?>' + '/id/' + id;
             $.get(url, function(result) {
                 result = $.parseJSON(result);
                 if (result.status) {
@@ -737,6 +757,7 @@ var GalleryListView = Backbone.View.extend({
             var url = '<?php echo $this->url('admin', array(
                 'controller' => 'article',
                 'action'     => 'save-asset',
+                'fake_id'    => $form->get('fake_id')->getValue(),
                 'type'       => 'image',
                 'media'      => '',
             )) ?>' + id + '/' + page.ajaxId();

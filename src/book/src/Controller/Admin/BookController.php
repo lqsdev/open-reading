@@ -10,11 +10,12 @@
 
 namespace Module\Book\Controller\Admin;
 
+use Pi;
 use Pi\Mvc\Controller\ActionController;
 use Module\Book\Form\BookFilter;
 use Module\Book\Form\BookForm;
-use Pi;
 use Module\Book\Service;
+
 /**
  * Book controller
  */
@@ -33,53 +34,91 @@ class BookController extends ActionController
     
     public function editAction()
     {
-        $form = new BookForm('book');
-        $form->setAttribute('action', $this->url('', array('action' => 'edit')));
+        $id = $this->params('id');
 
-        if ($this->request->isPost()) {
-            $post = $this->request->getPost();
-            $form->setData($post);            
-            $form->setInputFilter(new BookFilter);
-            if (!$form->isValid()) {
-                $this->view()->assign('form', $form);
-                return;
-            }
-            $data = $form->getData();                     
-            $inputData = array(
-                'title' => $data['title'],
-                'introduction' => $data['introduction'],
-            );
-            if (empty($data['id'])) {
-                $row = $this->getModel('book')->createRow($inputData);
-                $row->save();
-                $row->catalogue_id = $row->id;
-                $id = $row->id;
-                $row->save();
-            } else {
-                $row = $this->getModel('book')->find($data['id']);
-                $row->title = $data['title'];
-                $row->introduction = $data['introduction'];
-                $row->save();
-            }
+        $form = new BookForm('book');
+        $form->setAttribute('action', $this->url('', array('action' => 'save')));
+        if (!empty($id)) {
+            $row = $this->getModel('book')->find($id);
             $featureImage = $row->cover_url ? Pi::url($row->cover_url) : '';
             $featureThumb = $row->cover_url ? Pi::url(Service::getThumbFromOriginal($row->cover_url)) : '';
-        } else {
-            $id = $this->params('id');
-            if (!empty($id)) {
-                $row = $this->getModel('book')->find($id);
-                $featureImage = $row->cover_url ? Pi::url($row->cover_url) : '';
-                $featureThumb = $row->cover_url ? Pi::url(Service::getThumbFromOriginal($row->cover_url)) : '';
-                $form->setData(array(
-                    'id' => $row->id,
-                    'title' => $row->title,
-                    'introduction' => $row->introduction,
-                ));
-            }
+            $this->view()->assign('featureImage', $featureImage);
+            $this->view()->assign('featureThumb', $featureThumb);
+            $form->setData(array(
+                          'id' => $row->id,
+                       'title' => $row->title,
+                'introduction' => $row->introduction,
+            ));
         }
+        
         $this->view()->assign('form', $form);
-        $this->view()->assign('featureImage', $featureImage);
-        $this->view()->assign('featureThumb', $featureThumb);
         $this->view()->setTemplate('book-edit');
+    }
+    
+    public function saveAction()
+    {
+        if (!$this->request->isPost())
+            exit;
+
+        $form = new BookForm('book');
+        $post = $this->request->getPost();
+        $form->setData($post);            
+        $form->setInputFilter(new BookFilter);
+        if (!$form->isValid()) {
+            $this->view()->assign('form', $form);
+            $form->setAttribute('action', $this->url('', array('action' => 'save')));
+            $this->view()->setTemplate('book-edit');
+            return;
+        }
+        
+        $data = $form->getData();
+        $rowId = $this->saveBook($data);
+        return $this->redirect()->toRoute('', array(
+                     'action' => 'edit',
+                         'id' => $rowId,
+                    'save' => 'success'  // 暂时在url上显示保存成功
+        ));
+    }
+    
+    protected function saveBook($data)
+    {
+        $bookInfo = array(
+            'title' => $data['title'],
+            'introduction' => $data['introduction']
+        );
+
+        $fakeId  = Service::getParam($this, 'fake_id', 0);
+        $module  = $this->getModule();
+        
+        $session = Service::getUploadSession($module, 'feature');
+        if (isset($session->$fakeId)) {
+            $bookInfo['cover_url'] = $session->$fakeId;
+            unset($session->$fakeId);
+        }
+        
+        if (empty($data['id'])) {
+            $row = $this->getModel('book')->createRow($bookInfo);
+            $row->save();
+            $row->catalogue_id = $row->id;
+            $id = $row->id;
+            $row->save();
+        } else {
+            $id = $data['id'];
+            $row = $this->getModel('book')->find($data['id']);
+            $row->title        = $bookInfo['title'];
+            $row->introduction = $bookInfo['introduction'];
+            if (isset($bookInfo['cover_url'])) {
+                if ($row->cover_url != $bookInfo['cover_url']) {
+                    $thumbUrl = Service::getThumbFromOriginal($row->cover_url);
+                    @unlink(Pi::path($row->cover_url));
+                    @unlink(Pi::path($thumbUrl));
+                }
+                $row->cover_url    = $bookInfo['cover_url'];
+            }
+            $row->save();
+        }
+
+        return $id;
     }
     
     public function saveImageAction()
@@ -89,7 +128,6 @@ class BookController extends ActionController
 
         $return  = array('status' => false);
         $mediaId = Service::getParam($this, 'media_id', 0);
-        $id      = Service::getParam($this, 'id', 0);
         $fakeId  = Service::getParam($this, 'fake_id', 0);
 
         // Checking is id valid
@@ -163,17 +201,8 @@ class BookController extends ActionController
 
         Service::saveImage($uploadInfo);
 
-        // Save image to draft
-        $rowArticle = $this->getModel('book')->find($id);
-
-        if ($rowArticle) {
-            $rowArticle->cover_url = $fileName;
-            $rowArticle->save();
-        } else {
-            // Or save info to session
-            $session = Service::getUploadSession($module);
-            $session->$id = $uploadInfo;
-        }
+        $session = Service::getUploadSession($module, 'feature');
+        $session->$fakeId = $uploadInfo['tmp_name'];
 
         $imageSize    = getimagesize(Pi::path($fileName));
         $originalName = isset($rawInfo['name']) ? $rawInfo['name'] : $rename;
@@ -195,39 +224,21 @@ class BookController extends ActionController
     public function removeImageAction()
     {
         Pi::service('log')->active(false);
-        $id           = Service::getParam($this, 'id', 0);
-        $fakeId       = Service::getParam($this, 'fake_id', 0);
-        $affectedRows = 0;
-        $module       = $this->getModule();
-
-        if ($id) {
-            $rowDraft = $this->getModel('book')->find($id);
-
-            if ($rowDraft && $rowDraft->cover_url) {
-                $thumbUrl = Service::getThumbFromOriginal($rowDraft->cover_url);
-                @unlink(Pi::path($rowDraft->cover_url));
-                @unlink(Pi::path($thumbUrl));
-                // Update db
-                $rowDraft->cover_url = '';
-                $affectedRows    = $rowDraft->save();
-            }
-        } else if ($fakeId) {
-            $session = Service::getUploadSession($module, 'feature');
-
-            if (isset($session->$fakeId)) {
-                $uploadInfo = $session->$fakeId;
-
-                $url = Service::getThumbFromOriginal($uploadInfo['tmp_name']);
-                $affectedRows = unlink(Pi::path($uploadInfo['tmp_name']));
-                @unlink(Pi::path($url));
-
-                unset($session->$id);
-                unset($session->$fakeId);
-            }
+        $fakeId  = Service::getParam($this, 'fake_id', 0);
+        $module  = $this->getModule();
+        $session = Service::getUploadSession($module, 'feature');
+        
+        if (isset($session->$fakeId)) {
+            $uploadInfo = $session->$fakeId;
+            //var_dump($session);var_dump($fakeId);var_dump($uploadInfo);die;
+            $url = Service::getThumbFromOriginal($uploadInfo);
+            @unlink(Pi::path($uploadInfo));
+            @unlink(Pi::path($url));
         }
+        $session->$fakeId = '';
         
         return array(
-            'status'    => $affectedRows ? true : false,
+            'status'    => true,
             'message'   => 'ok',
         );
     }

@@ -27,7 +27,7 @@ return array(
             'category'    => 'media',
             'title'       => _t('Media Path'),
             'description' => _t('Path to save media file.'),
-            'value'       => 'upload/article/media',
+            'value'       => 'upload/book/media',
         ),
         'media_extension' => array(
             'category'    => 'media',
@@ -105,25 +105,25 @@ return array(
             'category'    => 'media',
             'title'       => _t('Author Path'),
             'description' => _t('Path to upload photo of author.'),
-            'value'       => 'upload/article/author',
+            'value'       => 'upload/book/author',
         ),
         'path_category' => array(
             'category'    => 'media',
             'title'       => _t('Category Path'),
             'description' => _t('Path to upload image of category.'),
-            'value'       => 'upload/article/category',
+            'value'       => 'upload/book/category',
         ),
         'path_feature'  => array(
             'category'    => 'media',
             'title'       => _t('Feature Path'),
             'description' => _t('Path to upload feature image of article.'),
-            'value'       => 'upload/article/feature',
+            'value'       => 'upload/book/feature',
         ),
         'path_topic'    => array(
             'category'    => 'media',
             'title'       => _t('Topic Path'),
             'description' => _t('Path to upload image of topic.'),
-            'value'       => 'upload/article/topic',
+            'value'       => 'upload/book/topic',
         ),
         'sub_dir_pattern' => array(
             'category'    => 'media',
@@ -268,6 +268,5 @@ return array(
             'value'       => 360,
             'filter'      => 'number_int',
         ),
-
     ),
 );

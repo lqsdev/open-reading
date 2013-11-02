@@ -5,9 +5,7 @@
     $this->backbone();
     $this->js($this->assetModule('script/system-msg.js'));
 ?>
-<div class="page-header">
-    <h2><?php echo _escape($title) . ':  ' . $id; ?></h2>
-</div>
+
 <div id="js-menu-edit" style="margin-bottom: 10px;">
     <div class="form-actions form-inline" style="margin: 0 0 10px 0;">
         <span class="btn btn-primary menu-submit" data-original-title="<?php _e('Only click this button to save data'); ?>">
@@ -24,6 +22,26 @@
     </div>
     <div class="menu-to-edit"></div>
 </div>
+
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'book', 'action' => 'edit', 'id' => $bid));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Book Info'), __('Edit Book Info'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'book', 'action' => 'list',));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Go To Book List'), __('Go To Book List'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+
 <script type="text/template" id="temp-menu">
     <div class="no-select row-fluid tree-item-header">
         <div class="span8">
@@ -134,7 +152,7 @@
         },
         manageArticle: function() {
             var cdid = this.model.get('id');
-            window.open("<?php echo $this->url('', array('controller' => 'catalogue', 'action' => 'editItem', 'bid' => $bid));?>" + '/cdid/' + cdid);
+            window.location.href = "<?php echo $this->url('', array('controller' => 'catalogue', 'action' => 'editItem', 'bid' => $bid));?>" + '/cdid/' + cdid;
         }
     });
     var MenuListItemView = Backbone.View.extend({

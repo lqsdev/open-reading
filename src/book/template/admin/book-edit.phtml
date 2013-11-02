@@ -27,6 +27,8 @@
 <?php 
     $element = $form->get('id');
     echo $this->formElement($element);
+    $element = $form->get('fake_id');
+    echo $this->formElement($element);
 ?>
 <div>
 <?php $element = $form->get('title'); ?>    
@@ -53,10 +55,36 @@
 </div>
 <?php echo $this->form()->closeTag() ?>
 
+<?php 
+if ($form->get('id')->getValue()) {
+?>
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $form->get('id')->getValue()));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+<?php
+}
+?>
+
+<div class="span2">
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'book', 'action' => 'list',));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Go To Book List'), __('Go To Book List'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+
 <script>
 (function($) {
     var page = {
-    id      :"<?php echo $form->get('id')->getValue() ? $form->get('id')->getValue() : $form->get('fake_id')->getValue(); ?>",
+    id      :"<?php echo $form->get('id')->getValue() ? : $form->get('fake_id')->getValue(); ?>",
     ajaxId  : function() {
         return "<?php echo $form->get('id')->getValue()
             ? 'id/' . $form->get('id')->getValue() 
@@ -65,7 +93,7 @@
     form    : $("form.row-fluid"),
     from    : "<?php echo isset($from) ? $this->escape($from) : '' ?>",
     mediaFakeId         : '<?php echo uniqid() ?>',
-    featureFakeId       : '<?php echo uniqid() ?>',
+    featureFakeId       : '<?php echo $form->get('fake_id')->getValue() ?>',
     init    : function () {
     },
     $       : function(selector) {
@@ -221,9 +249,10 @@
                 '',
                 array(
                     'controller' => 'book',
-                    'action'     => 'remove-image'
+                    'action'     => 'remove-image',
+                    'fake_id'   => $form->get('fake_id')->getValue(),
                 )
-            ); ?>' + parameter).done(function() {
+            ); ?>' + '/' + parameter).done(function() {
                 $('#jsUpload').find(".upload-image-wrap").html('');
             });
         },

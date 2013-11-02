@@ -19,24 +19,23 @@ class ArticleForm extends BaseForm {
                 'label' => __('Title'),
             ),
             'attributes' => array(
-                'type' => 'text',
+                       'type' => 'text',
                 'placeholder' => __('Title'),
+                      'class' => 'span12',
             ),
         ));
 
         $editorConfig = Pi::config()->load("module.article.ckeditor.php");
-       
         $editorConfig['editor'] = 'html';
         $editorConfig['set'] = '';
         
         $this->add(array(
             'name' => 'content',
             'attributes' => array(
-                'type' => 'editor',              
+                'type' => 'editor',
                 
             ),
             'options' => $editorConfig,
-           
         ));
         
         $this->add(array(

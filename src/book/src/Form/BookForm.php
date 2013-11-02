@@ -15,7 +15,7 @@ class BookForm extends BaseForm {
         $this->add(array(
             'name' => 'id',
             'attributes' => array(
-                'type' => 'hidden',              
+                  'type' => 'hidden',              
             ),
         ));
         
@@ -25,8 +25,9 @@ class BookForm extends BaseForm {
                 'label' => __('Book Title'),
             ),
             'attributes' => array(
-                'type' => 'text',
+                       'type' => 'text',
                 'placeholder' => __('Title'),
+                      'class' => 'span8',
             ),
         ));
 
@@ -36,8 +37,10 @@ class BookForm extends BaseForm {
                 'label' => __('Introduction'),
             ),
             'attributes' => array(
-                'type' => 'textarea',
+                       'type' => 'textarea',
                 'placeholder' => __('Introduction'),
+                      'class' => 'span8',
+                       'rows' => '8',
             ),
         ));
         

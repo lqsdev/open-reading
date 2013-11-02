@@ -22,293 +22,75 @@ use Module\Book\Media;
  */
 class ArticleController extends ActionController
 {
-    protected function submit($id, $articleId)
+    public function listAction()
     {
-        // Move asset
-        $modelDraftAsset     = $this->getModel('asset_draft');
-        $resultsetDraftAsset = $modelDraftAsset->select(array(
-            'draft' => $id,
-        ));
-        $modelAsset = $this->getModel('asset');
-        foreach ($resultsetDraftAsset as $asset) {
-            $data = array(
-                'media'         => $asset->media,
-                'type'          => $asset->type,
-                'article'       => $articleId,
-            );
-            $rowAsset = $modelAsset->createRow($data);
-            $rowAsset->save();
-        }
-
-        // Clear draft assets info
-        $modelDraftAsset->delete(array('draft' => $id));
+        $model = $this->getModel('article');
+        $select = $model->select();
+        $select->order(array('id'));
+        $articles = $model->selectWith($select);
     }
     
     public function editAction()
     {
-        $id   = $this->params('id');
-        $bid  = $this->params('bid');
-        $cdid = $this->params('cdid');
+        $id = $this->params('id');
 
-        $form = new ArticleForm('article');        
-        $form->setAttribute('action', $this->url('', array('action' => 'edit')));
-        $form->setData(array(
-            'id' => $id,
-            'bid' => $bid,
-            'cdid' => $cdid,
-        ));
-        $this->view()->assign('form', $form);
-        
-        $configs = Pi::service('module')->config('', $this->getModule());
-        $configs['max_media_size'] = Media::transferSize($configs['max_media_size']);
-        $configs['max_image_size'] = Media::transferSize($configs['max_image_size']);
+        // 读取config信息
+        $configs = $this->getModuleConfig();
         $this->view()->assign('configs', $configs);
         
-        if ($this->request->isPost()) {
-            $post = $this->request->getPost();
-            $form->setData($post);            
-            $form->setInputFilter(new ArticleFilter);
-            if (!$form->isValid()) {
-                $this->view()->assign('form', $form);
-                return;
-            }
-            $data = $form->getData();
-            
-            $inputData = array(
-                'title'   => $data['title'],
-                'content' => $data['content'],
-            );
-            if (empty($data['id'])) {
-                $row = $this->getModel('article')->createRow($inputData);
-                $row->save();
-                $cataRow = $this->getModel('catalogue_rel_article')->createRow(
-                        array(
-                            'book_id' => $data['bid'],
-                            'cata_data_id' => $data['cdid'],
-                            'article_id' => $row->id,
-                        ));
-                $cataRow->save();
-            } else {
-                $row = $this->getModel('article')->find($data['id']);
-                $row->assign($inputData);
-                $row->save();
-            }
-            $this->submit($data['fake_id'], $row->id);
-        } else {
-            $images = array();
-            //var_dump($id);
-            $resultsetDraftAsset = $this->getModel('asset')->select(array('article' => $id,))->toArray();
-            // Getting media ID
-            $mediaIds = array(0);
-            foreach ($resultsetDraftAsset as $asset) {
-                $mediaIds[] = $asset['media'];
-            }
-            //var_dump($mediaIds);
-            // Getting media details
-            $resultsetMedia = $this->getModel('media')->select(array('id' => $mediaIds));
-            $medias = array();
-            foreach ($resultsetMedia as $media) {
-                $medias[$media->id] = $media->toArray();
-            }
-            // var_dump($medias);die;
-            // Getting assets
-            foreach ($resultsetDraftAsset as $asset) {
-                $media = $medias[$asset['media']];
-                $imageSize = getimagesize(Pi::path($media['url']));
-                $images[] = array(
-                    'id' => $asset['id'],
-                    'title' => $media['title'],
-                    'size' => $media['size'],
-                    'w' => $imageSize['0'],
-                    'h' => $imageSize['1'],
-                    'downloadUrl' => $this->url(
-                            '', array(
-                        'controller' => 'media',
-                        'action' => 'download',
-                        'id' => $media['id'],
-                            )
-                    ),
-                    'preview_url' => Pi::url($media['url']),
-                    'thumb_url' => Pi::url(Service::getThumbFromOriginal($media['url'])),
-                );
-            }
-            $row = $this->getModel('article')->find($id);
-            //$this->setModuleConfig();
-            $form->setData(array(
-                'id' => $id,
-                'bid' => $bid,
-                'cdid' => $cdid,
-                'title' => $row['title'],
-                'content' => $row['content'],
-            ));
-        }
-         $this->view()->assign('images', $images);
+        // 读取文件信息
+        $form = new ArticleForm('article');        
+        $form->setAttribute('action', $this->url('', array('action' => 'save')));
+        $row = $this->getModel('article')->find($id);
+        $form->setData(
+                array(
+                         'id' => $id,
+                        'bid' => $this->params('bid'),
+                       'cdid' => $this->params('cdid'),
+                      'title' => $row['title'],
+                    'content' => $row['content'],
+        ));
+        $this->view()->assign('form', $form);
+
+        // 读取图片信息
+        $images = $this->getArticleImages($id);
+        $this->view()->assign('images', $images);
+
         $this->view()->setTemplate('article-edit');
     }
-    
-    public function saveImageAction()
-    {
-        Pi::service('log')->active(false);
-        $module  = $this->getModule();
 
-        $return  = array('status' => false);
-        $mediaId = Service::getParam($this, 'media_id', 0);
-        $id      = Service::getParam($this, 'id', 0);
-        $fakeId  = Service::getParam($this, 'fake_id', 0);
-        // Checking is id valid
-        if (empty($fakeId)) {
-            $return['message'] = __('Invalid ID!');
-            echo json_encode($return);
+    public function saveAction()
+    {
+        if (!$this->request->isPost())
             exit;
+
+        // 校验、获取post数据
+        $post = $this->request->getPost();
+        $form = new ArticleForm('article');        
+        $form->setData($post);
+        $form->setInputFilter(new ArticleFilter);
+        if (!$form->isValid()) {
+            $form->setAttribute('action', $this->url('', array('action' => 'save')));
+            $this->view()->assign('form', $form);
+            $configs = $this->getModuleConfig();
+            $this->view()->assign('configs', $configs);
+            $this->view()->setTemplate('article-edit');
+            return;
         }
-        $rename  = $fakeId;
         
-        $extensions = array_filter(explode(',', $this->config('image_extension')));
-        foreach ($extensions as &$ext) {
-            $ext = strtolower(trim($ext));
-        }
-        
-        // Get distination path
-        $destination = Service::getTargetDir('feature', $module, true);
-        
-        if ($mediaId) {
-            $rowMedia = $this->getModel('media')->find($mediaId);
-            // Checking is media exists
-            if (!$rowMedia->id or !$rowMedia->url) {
-                $return['message'] = __('Media is not exists!');
-                echo json_encode($return);
-                exit;
-            }
-            // Checking is media an image
-            if (!in_array(strtolower($rowMedia->type), $extensions)) {
-                $return['message'] = __('Invalid file extension!');
-                echo json_encode($return);
-                exit;
-            }
-            
-            $ext = strtolower(pathinfo($rowMedia->url, PATHINFO_EXTENSION));
-            $rename     .= '.' . $ext;
-            $fileName    = rtrim($destination, '/') . '/' . $rename;
-            if (!copy(Pi::path($rowMedia->url), Pi::path($fileName))) {
-                $return['message'] = __('Can not create image file!');
-                echo json_encode($return);
-                exit;
-            }
-        } else {
-            $rawInfo = $this->request->getFiles('upload');
-            
-            $ext     = pathinfo($rawInfo['name'], PATHINFO_EXTENSION);
-            $rename .= '.' . $ext;
-            
-            $upload      = new UploadHandler;
-            $upload->setDestination(Pi::path($destination))
-                   ->setRename($rename)
-                   ->setExtension($this->config('image_extension'))
-                   ->setSize($this->config('max_image_size'));
+        $data = $form->getData();
+        $rowId = $this->saveArticles($data);
 
-            // Checking is uploaded file valid
-            if (!$upload->isValid()) {
-                $return['message'] = $upload->getMessages();
-                echo json_encode($return);
-                exit;
-            }
-            
-            $upload->receive();
-            $fileName = $destination . '/' . $rename;
-        }
+        $this->submit($rowId, $data['fake_id']);
+        return $this->redirect()->toRoute('', array(
+                    'action' => 'edit',
+                        'id' => $rowId,
+                       'bid' => $data['cid'],
+                      'cdid' => $data['cdid'],
+                       'save' => 'success'
+        ));
+    } 
 
-        // Scale image
-        $uploadInfo['tmp_name'] = $fileName;
-        $uploadInfo['w']        = $this->config('feature_width');
-        $uploadInfo['h']        = $this->config('feature_height');
-        $uploadInfo['thumb_w']  = $this->config('feature_thumb_width');
-        $uploadInfo['thumb_h']  = $this->config('feature_thumb_height');
-
-        Service::saveImage($uploadInfo);
-
-        // Save image to draft
-        $rowArticle = $this->getModel('article')->find($id);
-        if ($rowArticle) {
-            $rowArticle->image = $fileName;
-            $rowArticle->save();
-        } else {
-            // Or save info to session
-            $session = Service::getUploadSession($module);
-            $session->$id = $uploadInfo;
-        }
-
-        $imageSize    = getimagesize(Pi::path($fileName));
-        $originalName = isset($rawInfo['name']) ? $rawInfo['name'] : $rename;
-
-        // Prepare return data
-        $return['data'] = array(
-            'originalName' => $originalName,
-            'size'         => filesize(Pi::path($fileName)),
-            'w'            => $imageSize['0'],
-            'h'            => $imageSize['1'],
-            'preview_url'  => Pi::url(Service::getThumbFromOriginal($fileName)),
-        );
-
-        $return['status'] = true;
-        echo json_encode($return);
-        exit();
-    }
-
-    public function removeImageAction()
-    {
-        Pi::service('log')->active(false);
-        $id           = Service::getParam($this, 'id', 0);
-        $fakeId       = Service::getParam($this, 'fake_id', 0);
-        $affectedRows = 0;
-        $module       = $this->getModule();
-
-        if ($id) {
-            $rowDraft = $this->getModel('draft')->find($id);
-
-            if ($rowDraft && $rowDraft->image) {
-
-                $thumbUrl = Service::getThumbFromOriginal($rowDraft->image);
-                if ($rowDraft->article) {
-                    $modelArticle = $this->getModel('article');
-                    $rowArticle   = $modelArticle->find($rowDraft->article);
-                    if ($rowArticle && $rowArticle->image != $rowDraft->image) {
-                        // Delete file
-                        @unlink(Pi::path($rowDraft->image));
-                        @unlink(Pi::path($thumbUrl));
-                    }
-                } else {
-                    @unlink(Pi::path($rowDraft->image));
-                    @unlink(Pi::path($thumbUrl));
-                }
-
-                // Update db
-                $rowDraft->image = '';
-                $affectedRows    = $rowDraft->save();
-            }
-        } else if ($fakeId) {
-            $session = Service::getUploadSession($module, 'feature');
-
-            if (isset($session->$fakeId)) {
-                $uploadInfo = $session->$fakeId;
-
-                $url = Service::getThumbFromOriginal($uploadInfo['tmp_name']);
-                $affectedRows = unlink(Pi::path($uploadInfo['tmp_name']));
-                @unlink(Pi::path($url));
-
-                unset($session->$id);
-                unset($session->$fakeId);
-            }
-        }
-
-        return array(
-            'status'    => $affectedRows ? true : false,
-            'message'   => 'ok',
-        );
-    }
-    
-    /**
-     * Save asset
-     */
     public function saveAssetAction()
     {
         Pi::service('log')->active(false);
@@ -336,31 +118,16 @@ class ArticleController extends ActionController
             exit();
         }
         
-        // Saving asset data
-        $model     = $this->getModel('asset_draft');
-        $rowAssets = $model->select(array(
-            'draft' => $draftId,
-            'media' => $mediaId
-        ));
-        if ($rowAssets->count() == 0) {
-            $data     = array(
-                'draft'   => $draftId,
-                'media'   => $mediaId,
-                'type'    => $type,
-            );
-            $row = $model->createRow($data);
-            $row->save();
-            
-            if (!$row->id) {
-                $return['message'] = __('Can not save data!');
-                echo json_encode($return);
-                exit();
-            }
-        }
+        $fakeId  = Service::getParam($this, 'fake_id', 0);
+        $module  = $this->getModule();
+        $session = Service::getUploadSession($module, 'asset');
+        $media = isset($session->$fakeId) ? $session->$fakeId : array();
+        $media[$mediaId] = 'save';
+        $session->$fakeId = $media;
         
         $return['data']    = array(
             'media'       => $mediaId,
-            'id'          => $row->id,
+            'id'          => $mediaId,
             'title'       => $rowMedia->title,
             'size'        => $rowMedia->size,
             'downloadUrl' => $this->url('admin', array(
@@ -379,9 +146,6 @@ class ArticleController extends ActionController
         exit();
     }
     
-    /**
-     * Delete asset
-     */
     public function removeAssetAction()
     {
         Pi::service('log')->active(false);
@@ -393,17 +157,125 @@ class ArticleController extends ActionController
             echo json_encode($return);
             exit();
         }
-        
-        $result = $this->getModel('asset_draft')->delete(array('id' => $id));
-        if ($result) {
-            $return['message'] = __('Delete item sucessful!');
-            $return['status']  = true;
-        } else {
-            $return['message'] = __('Can not delete item!');
-        }
-        
+
+        $fakeId  = Service::getParam($this, 'fake_id', 0);
+        $module  = $this->getModule();
+        $session = Service::getUploadSession($module, 'asset');
+        $media = isset($session->$fakeId) ? $session->$fakeId : array();
+        $media[$id] = 'remove';
+        $session->$fakeId = $media;
+
+        $return['message'] = __('Delete item sucessful!');
+        $return['status']  = true;
+
         echo json_encode($return);
         exit();
     }
-}
+    
+    protected function submit($articleId, $fakeId)
+    {
+        $module  = $this->getModule();
+        $session = Service::getUploadSession($module, 'asset');
+        if (!isset($session->$fakeId)) {
+            return;
+        }
+        
+        $modelAsset = $this->getModel('asset');
+        foreach ($session->$fakeId as $media => $status) {
+            var_dump($media);
+            $modelAsset->delete(array('article' => $articleId, 'media' => $media));
+            if ($status == 'save') {
+                $data = array(
+                    'article' => $articleId,
+                    'media'   => $media,
+                    'type'    => 'media',
+                );
+                $rowAsset = $modelAsset->createRow($data);
+                $rowAsset->save();
+            }
+        }
+    }
+    
+    protected function getArticleImages($id)
+    {
+        // Getting media IDs
+        $mediaIds = array(0);
+        $resultsetDraftAsset = $this->getModel('asset')
+                ->select(array('article' => $id))->toArray();
+        foreach ($resultsetDraftAsset as $asset) {
+            $mediaIds[] = $asset['media'];
+        }
 
+        // Getting media details
+        $medias = array();
+        $resultsetMedia = $this->getModel('media')->select(array('id' => $mediaIds));
+        foreach ($resultsetMedia as $media) {
+            $medias[$media->id] = $media->toArray();
+        }
+        
+        // Getting assets
+        $images = array();
+        foreach ($resultsetDraftAsset as $asset) {
+            $media = $medias[$asset['media']];
+            $imageSize = getimagesize(Pi::path($media['url']));
+            $images[] = array(
+                'id'    => $media['id'],
+                'title' => $media['title'],
+                'size'  => $media['size'],
+                'w'     => $imageSize['0'],
+                'h'     => $imageSize['1'],
+                'downloadUrl' => $this->url('',
+                        array(
+                            'controller' => 'media',
+                            'action'     => 'download',
+                            'id'         => $media['id'],
+                        )
+                    ),
+                'preview_url' => Pi::url($media['url']),
+                'thumb_url' => Pi::url(Service::getThumbFromOriginal($media['url'])),
+            );
+        }
+
+        return $images;
+    }
+    
+    protected function saveArticles($data)
+    {
+        // id 为空，为新建 
+        if (empty($data['id'])) {
+            $row = $this->getModel('article')->createRow(
+                    array(
+                        'title' => $data['title'],
+                        'content' => $data['content'],
+                    )
+            );
+            $row->save();
+            $catalogueRow = $this->getModel('catalogue_rel_article')
+                    ->createRow( array(
+                        'book_id' => $data['bid'],
+                        'cata_data_id' => $data['cdid'],
+                        'article_id' => $row->id,
+                    )
+            );
+            $catalogueRow->save();
+        } else {
+            $row = $this->getModel('article')->find($data['id']);
+            $row->assign(
+                    array(
+                        'title' => $data['title'],
+                        'content' => $data['content'],
+                    )
+            );
+            $row->save();
+        }
+        return $row->id;
+    }
+
+    protected function getModuleConfig()
+    {
+        $configs = Pi::service('module')->config('', $this->getModule());
+        $configs['max_media_size'] = Media::transferSize($configs['max_media_size']);
+        $configs['max_image_size'] = Media::transferSize($configs['max_image_size']);
+        return $configs;
+    }
+}
