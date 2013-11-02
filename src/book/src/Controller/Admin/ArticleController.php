@@ -85,7 +85,7 @@ class ArticleController extends ActionController
         return $this->redirect()->toRoute('', array(
                     'action' => 'edit',
                         'id' => $rowId,
-                       'bid' => $data['cid'],
+                       'bid' => $data['bid'],
                       'cdid' => $data['cdid'],
                        'save' => 'success'
         ));
