@@ -23,8 +23,7 @@ class BookController extends ActionController
     }
     
     public function listAction()
-    {
-       
+    {       
         $columns = array('id', 'title', 'cover_url');
         $model  = $this->getModel('book');
         $select = $model->select()
@@ -51,7 +50,13 @@ class BookController extends ActionController
             $book = $row->toArray();
         }
 
+        $cid = $book['catalogue_id'];
+        $rowCatalogue = $this->getModel('catalogue')->find($cid);
+        
+        $catalogue = $rowCatalogue == null ?  '' : json_decode($rowCatalogue['data']);
+        
         $this->view()->assign('book', $book);
+        $this->view()->assign('catalogue', $catalogue);
         $this->view()->setTemplate('book-view');
     }
 }

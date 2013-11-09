@@ -4,52 +4,56 @@ $this->jQuery();
 $this->Backbone();
 $this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
 ?>
-<div class="container">
+<div>
+    <h3>书名</h3>
+    <?php
+    echo $book['title'];
+    ?>
+</div>
+
+<div>
+    <h3>封面</h3>
+    <?php
+    $image = Pi::url($book['cover_url']);
+    ?>
+    <img src="<?php echo $this->escape($image) ?>"/>
+</div>
+
+<div>
+    <h3>简介</h3>
+    <?php
+    echo $book['introduction'];
+    ?>
+</div>
+
+<div>
+    <h3>目录</h3>
     <div>
         <?php
-        echo '书籍ID： ' . $book['id'];
+        foreach ($catalogue as $item) {
+        ?>
+            <div>
+                <?php
+                $url = $this->url('', array('controller' => 'article', 'action' => 'list', 'bid' => $book['id'], 'cdid' => $item->id));
+                $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View catalogue'), $item->label);
+                for ($i = 0; $i < $item->depth; $i++)
+                    echo '&nbsp;&nbsp;&nbsp;&nbsp';
+                echo '|—' . $link;
+                ?>
+            </div>
+        <?php
+        }
         ?>
     </div>
+</div>
 
-    <div>
+<div>
+    <strong>
         <?php
-        echo '书名： ' . $book['title'];
-        ?>
-    </div>
-
-    <div>
-       <?php
-       echo '封面： ';
-       $image = $this->assetModule($book['cover_url']);
-       ?>
-       <img src="<?php echo $this->escape($image) ?>"/>
-   </div>
-
-   <div>
-        <?php
-        echo '简介： ';
-        echo $book['introduction'];
-        ?>
-    </div>
-
-    <div>
-        <h3>
-            目录在这里
-        </h3>
-        <?php
-        $url = $this->url('', array_merge(array('controller' => 'article', 'action' => 'view', 'id' => $book['id'])));
-        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View This Article'), __('View This Article'));
-        echo $link;
-        ?>    
-    </div>
-
-    <div>
-        <?php
-        $url = $this->url('', array_merge(array('controller' => 'book', 'action' => 'list')));
+        $url = $this->url('', array('controller' => 'book', 'action' => 'list'));
         $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book list'), __('Back to Book list'));
         echo $link;
         ?>
-    </div>
-
+    </strong>
 </div>
 

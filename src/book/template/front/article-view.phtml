@@ -4,25 +4,47 @@ $this->jQuery();
 $this->Backbone();
 $this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
 ?>
-<style type="text/css">
-.detail_title{text-align:center;}
-.detail_content{margin-top:30px;}
-</style>
 
-<div class="container">
-    <div class="row ">
-        <div class="span12">
-            <h1 class="detail_title">
-                <?php
-                echo $article['title'];
-                ?></h1>
-                <div class="detail_content">
-                 <p>
-                    <?php
-                    echo $article['content'];
-                    ?>
-                </p>
-            </div>
-        </div>
+<div class="span12">
+    <div>
+        <center>
+            <h2>
+                <?php echo $article['title']; ?>
+            </h2>
+        </center>
+    </div>
+    <div>
+        <?php echo $article['content']; ?>
     </div>
 </div>
+
+<div>
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'article', 'action' => 'list', 'bid' => $bid, 'cdid' => $cdid));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Catalogue Article list'), __('Back to Catalogue Article list'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+
+<div>
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'book', 'action' => 'view', 'id' => $bid));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View Book'), __('View Book'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+
+<div>
+    <strong>
+        <?php
+        $url = $this->url('', array('controller' => 'book', 'action' => 'list'));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Back to Book list'), __('Back to Book list'));
+        echo $link;
+        ?>
+    </strong>
+</div>
+        
