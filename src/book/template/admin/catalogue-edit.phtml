@@ -12,13 +12,6 @@
             <i class="icon-edit"></i>
             <?php _e('Save menu'); ?>
         </span>
-        <div class="input-append" style="margin-left: 30px;">
-            <input type="text" placeholder="Label" class="js-add-label">
-            <span class="btn js-add-to">
-                <i class="icon-plus"></i>
-                <?php _e('Add to menu'); ?>
-            </span>
-        </div>
     </div>
     <div class="menu-to-edit"></div>
 </div>
@@ -51,8 +44,7 @@
             <span class="btn btn-small js-toggle" title="<?php _e('Click to toggle edit'); ?>">
                 <?php _e('Edit'); ?>
             </span>
-            <button class="btn btn-small js-manage">Manage</button>
-            <button class="btn btn-small js-delete">×</button>
+            <button class="btn btn-small js-view">View</button>
         </div>
     </div>
     <div class="tree-item-body">
@@ -111,7 +103,7 @@
         events: {
             'click .js-toggle': 'toggle',
             'click .js-delete': 'deleteItem',
-            'click .js-manage': 'manageArticle',
+            'click .js-view': 'viewArticle',
             'click .tree-item-save': 'saveItem'
         },
         initialize: function() {
@@ -150,9 +142,9 @@
             this.$('[name=url]').tooltip();
             return this;
         },
-        manageArticle: function() {
-            var cdid = this.model.get('id');
-            window.location.href = "<?php echo $this->url('', array('controller' => 'catalogue', 'action' => 'editItem', 'bid' => $bid));?>" + '/cdid/' + cdid;
+        viewArticle: function() {
+            var id = this.model.get('id');
+            window.location.href = "<?php echo $this->url('', array('controller' => 'article', 'action' => 'edit', 'bid' => $bid));?>" + '/id/' + id;
         }
     });
     var MenuListItemView = Backbone.View.extend({
