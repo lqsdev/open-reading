@@ -34,11 +34,11 @@ $this->js(Pi::url('static/vendor/bootstrap/js/bootstrap.js'));
         ?>
             <div>
                 <?php
-                $url = $this->url('', array('controller' => 'article', 'action' => 'list', 'bid' => $book['id'], 'cdid' => $item->id));
+                $url = $this->url('', array('controller' => 'article', 'action' => 'view', 'bid' => $book['id'], 'id' => $item->id));
                 $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('View catalogue'), $item->label);
                 for ($i = 0; $i < $item->depth; $i++)
                     echo '&nbsp;&nbsp;&nbsp;&nbsp';
-                echo '|—' . $link;
+                echo '|—&nbsp;&nbsp;' . $link;
                 ?>
             </div>
         <?php

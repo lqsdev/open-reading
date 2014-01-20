@@ -25,18 +25,31 @@ class ArticleForm extends BaseForm {
             ),
         ));
 
-        $editorConfig = Pi::config()->load("module.article.ckeditor.php");
-        $editorConfig['editor'] = 'html';
-        $editorConfig['set'] = '';
-        
         $this->add(array(
             'name' => 'content',
-            'attributes' => array(
-                'type' => 'editor',
-                
+            'options' => array(
+                'label' => __('Content'),
             ),
-            'options' => $editorConfig,
+            'attributes' => array(
+                       'type' => 'textarea',
+                'placeholder' => __('Conent'),
+                      'class' => 'span12',
+                       'rows' => 20,
+            ),
         ));
+        
+//        $editorConfig = Pi::config()->load("module.article.ckeditor.php");
+//        $editorConfig['editor'] = 'html';
+//        $editorConfig['set'] = '';
+//        
+//        $this->add(array(
+//            'name' => 'content',
+//            'attributes' => array(
+//                'type' => 'editor',
+//                
+//            ),
+//            'options' => $editorConfig,
+//        ));
         
         $this->add(array(
             'name' => 'id',

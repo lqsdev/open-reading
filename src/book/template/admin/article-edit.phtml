@@ -46,8 +46,6 @@
     echo $this->formElement($element);
     $element = $form->get('bid');
     echo $this->formElement($element);
-    $element = $form->get('cdid');
-    echo $this->formElement($element);
     $element = $form->get('fake_id');
     echo $this->formElement($element);
 ?>
@@ -64,16 +62,7 @@
     <strong>
         <?php
         $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit', 'bid' => $form->get('bid')->getValue()));
-        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue'), __('Edit Catalogue'));
-        echo $link;
-        ?>
-    </strong>
-</div>
-<div class="span2">
-    <strong>
-        <?php
-        $url = $this->url('', array('controller' => 'catalogue', 'action' => 'edit-item', 'bid' => $form->get('bid')->getValue(), 'cdid' => $form->get('cdid')->getValue()));
-        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Edit Catalogue Item'), __('Edit Catalogue Item'));
+        $link = sprintf('<a href="%s" title="%s">%s</a>', $url, __('Go to Catalogue'), __('Go to Catalogue'));
         echo $link;
         ?>
     </strong>

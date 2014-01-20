@@ -12,6 +12,7 @@ namespace Module\Book\Controller\Front;
 
 use \Zend\Db\Sql\Select;
 use Pi\Mvc\Controller\ActionController;
+use Module\Book\XmlToHtml;
 
 /**
  * Article controller
@@ -21,17 +22,16 @@ class ArticleController extends ActionController
     public function viewAction()
     {
         $bid = $this->params('bid');
-        $cdid = $this->params('cdid');
-        
         $id = $this->params('id');
         $row = $this->getModel('article')->find($id);
         if ($row != null) {
-            $article = $row->toArray();
+            $articleXml = $row->toArray();
+            $converter = new XmlToHtml;
+            $articleHtml = $converter->parse($articleXml['content']);
+            $this->view()->assign('article', $articleHtml);
         }
         
-        $this->view()->assign('bid', $bid);
-        $this->view()->assign('cdid', $cdid);        
-        $this->view()->assign('article', $article);
+        $this->view()->assign('bid', $bid);       
         $this->view()->setTemplate('article-view');
     }
     

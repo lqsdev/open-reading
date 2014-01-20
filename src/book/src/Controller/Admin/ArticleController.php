@@ -46,7 +46,6 @@ class ArticleController extends ActionController
                 array(
                          'id' => $id,
                         'bid' => $this->params('bid'),
-                       'cdid' => $this->params('cdid'),
                       'title' => $row['title'],
                     'content' => $row['content'],
         ));
